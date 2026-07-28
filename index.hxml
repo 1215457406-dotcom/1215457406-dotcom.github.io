@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<!-- PWA / iOS 添加到主屏幕 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="阿鱼小助理">
+<meta name="theme-color" content="#FFB6C1">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- iOS Safari 图标 — base64内嵌，确保跨域环境Safari能识别 -->
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+
+<!-- 通用 favicon -->
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="manifest" href="manifest.json">
+
+<title>阿鱼小助理</title>
+<style>
+:root {
+  --olive: #556B2F;
+  --olive-dark: #3E4F22;
+  --olive-light: #7D9B4E;
+  --olive-pale: #E8EDE0;
+  --olive-bg: #F5F7F2;
+  --white: #FFFFFF;
+  --text: #2C2C2C;
+  --text-secondary: #6B6B6B;
+  --text-light: #999999;
+  --border: #E8E8E8;
+  --border-light: #F0F0F0;
+  --shadow: 0 2px 16px rgba(0,0,0,0.05);
+  --radius: 20px;
+  --radius-sm: 14px;
+  --radius-xs: 10px;
+  --transition: 0.2s ease;
+  --tag-green: #E8F5E9;
+  --tag-green-text: #388E3C;
+  --tag-blue: #E3F2FD;
+  --tag-blue-text: #1976D2;
+  --tag-orange: #FFF3E0;
+  --tag-orange-text: #E65100;
+  --tag-purple: #F3E5F5;
+  --tag-purple-text: #7B1FA2;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 16px);
+  --nav-h: 50px;
+  --bottom-nav-h: 64px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: #FAFAF8;
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  padding-top: calc(var(--nav-h) + var(--safe-top));
+  padding-bottom: calc(var(--bottom-nav-h) + var(--safe-bottom) + 8px);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== 顶部导航 ===== */
+.top-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding-top: var(--safe-top);
+  z-index: 100;
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-light);
+  height: calc(var(--nav-h) + var(--safe-top));
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+.nav-brand {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--olive);
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding-right: 12px;
+  border-right: 1px solid var(--border-light);
+  margin-right: 8px;
+}
+.nav-tabs-scroll {
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  display: flex;
+  gap: 2px;
+}
+.nav-tabs-scroll::-webkit-scrollbar { display: none; }
+.nav-tab {
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: 16px;
+  transition: var(--transition);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.nav-tab.active {
+  color: var(--olive);
+  background: var(--olive-pale);
+  font-weight: 600;
+}
+
+/* ===== 底部 Tab 导航（手机端主导航） ===== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  padding-bottom: var(--safe-bottom);
+}
+.bottom-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: var(--transition);
+  gap: 2px;
+  min-height: 50px;
+}
+.bottom-tab .bt-icon { font-size: 20px; line-height: 1; }
+.bottom-tab .bt-label { font-size: 10px; color: var(--text-light); font-weight: 500; }
+.bottom-tab.active .bt-label { color: var(--olive); font-weight: 600; }
+
+/* ===== 主内容区 ===== */
+.main-content {
+  padding: 12px 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ===== 通用卡片 ===== */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-title .icon { font-size: 18px; }
+.card-subtitle { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+
+/* ===== 按钮 ===== */
+.btn {
+  padding: 10px 18px;
+  border-radius: 22px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  min-height: 40px;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--olive); color: white; }
+.btn-outline { background: var(--white); color: var(--olive); border: 1.5px solid var(--olive); }
+.btn-ghost { background: transparent; color: var(--text-secondary); }
+.btn-sm { padding: 7px 16px; font-size: 13px; min-height: 34px; }
+.btn-xs { padding: 5px 12px; font-size: 12px; min-height: 28px; border-radius: 14px; }
+.btn-block { width: 100%; }
+
+/* ===== 倒计时横幅 ===== */
+.countdown-banner {
+  background: linear-gradient(135deg, var(--olive-dark) 0%, var(--olive) 50%, var(--olive-light) 100%);
+  color: white;
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.countdown-banner::after {
+  content: ''; position: absolute; right: -30px; top: -30px;
+  width: 140px; height: 140px; background: rgba(255,255,255,0.06); border-radius: 50%;
+}
+.countdown-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  position: relative; z-index: 1;
+  flex-wrap: wrap; gap: 8px;
+}
+.countdown-label { font-size: 13px; opacity: 0.85; font-weight: 500; }
+.countdown-phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.countdown-days {
+  font-size: 56px; font-weight: 800; line-height: 1;
+  letter-spacing: -2px; position: relative; z-index: 1;
+}
+.countdown-days span { font-size: 18px; font-weight: 500; margin-left: 2px; }
+.countdown-note {
+  font-size: 11px; opacity: 0.7; margin-top: 4px; position: relative; z-index: 1;
+}
+.countdown-edit {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white; padding: 6px 14px;
+  border-radius: 16px; font-size: 12px; cursor: pointer;
+  position: relative; z-index: 1;
+}
+.stats-row {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; margin-top: 14px; position: relative; z-index: 1;
+}
+.stat-item {
+  background: rgba(255,255,255,0.15);
+  border-radius: var(--radius-sm); padding: 12px 8px; text-align: center;
+}
+.stat-value { font-size: 24px; font-weight: 800; }
+.stat-label { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+
+/* ===== 任务列表 ===== */
+.task-input-row {
+  display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.task-input-row input {
+  flex: 1; min-width: 100px;
+  padding: 10px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs); font-size: 14px; outline: none;
+}
+.task-input-row input:focus { border-color: var(--olive); }
+.task-input-row select {
+  padding: 10px 8px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs); font-size: 13px;
+  color: var(--text-secondary); outline: none; cursor: pointer;
+}
+.task-list { list-style: none; }
+.task-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 10px; border-radius: var(--radius-xs);
+  margin-bottom: 3px; transition: var(--transition);
+}
+.task-item:active { background: #FAFAF8; }
+.task-item.completed .task-text { text-decoration: line-through; color: var(--text-light); }
+.task-checkbox {
+  width: 22px; height: 22px; border: 2px solid var(--border);
+  border-radius: 50%; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: transparent; transition: var(--transition);
+}
+.task-checkbox.done { background: var(--olive); border-color: var(--olive); color: white; }
+.task-text { flex: 1; font-size: 14px; word-break: break-all; }
+.task-tag {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  font-weight: 500; white-space: nowrap; flex-shrink: 0;
+}
+.task-delete {
+  background: none; border: none; color: #CCC; cursor: pointer;
+  font-size: 16px; padding: 6px; flex-shrink: 0;
+}
+
+/* ===== 时长统计 ===== */
+.duration-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 10px; margin-bottom: 12px;
+}
+.duration-item {
+  text-align: center; padding: 14px 8px;
+  background: var(--olive-bg); border-radius: var(--radius-sm);
+}
+.duration-value { font-size: 22px; font-weight: 700; color: var(--olive); }
+.duration-label { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.duration-sub {
+  font-size: 12px; color: var(--text-light); margin-top: 8px;
+  text-align: center; line-height: 1.8;
+}
+.duration-sub span { font-weight: 600; color: var(--olive); }
+.chart-box { margin-top: 10px; }
+.chart-box canvas { width: 100%; height: 100px; }
+
+/* ===== 复盘 ===== */
+.review-textarea {
+  width: 100%; min-height: 90px;
+  padding: 14px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 14px;
+  resize: vertical; outline: none; font-family: inherit;
+  line-height: 1.7;
+}
+.review-textarea:focus { border-color: var(--olive); }
+
+/* ===== 阶段卡片 ===== */
+.phase-section { margin-bottom: 24px; }
+.phase-section:last-child { margin-bottom: 0; }
+.phase-header {
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;
+}
+.phase-number {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--olive); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 15px; flex-shrink: 0;
+}
+.phase-number.p2 { background: var(--olive-light); }
+.phase-number.p3 { background: #A0B87A; }
+.phase-info { flex: 1; }
+.phase-name { font-size: 15px; font-weight: 700; }
+.phase-goal { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.phase-progress-text { font-size: 13px; font-weight: 600; color: var(--olive); white-space: nowrap; }
+.progress-bar {
+  height: 8px; background: var(--olive-pale);
+  border-radius: 4px; overflow: hidden; margin: 8px 0 12px;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--olive), var(--olive-light));
+  border-radius: 4px; transition: width 0.5s ease;
+}
+.phase-materials {
+  font-size: 12px; color: var(--text-light); margin-bottom: 12px;
+  padding: 8px 12px; background: var(--olive-bg); border-radius: var(--radius-xs);
+}
+
+/* ===== 知识库折叠 ===== */
+.accordion {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm); margin-bottom: 8px; overflow: hidden;
+}
+.accordion-header {
+  padding: 14px 16px; background: #FAFAF8; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  font-weight: 600; font-size: 15px;
+}
+.accordion-header:active { background: var(--olive-pale); }
+.accordion-arrow { font-size: 11px; color: var(--text-light); transition: transform 0.25s ease; }
+.accordion.open .accordion-arrow { transform: rotate(180deg); }
+.accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+.accordion.open .accordion-body { max-height: 500px; }
+.accordion-body-inner { padding: 14px 16px; color: var(--text-secondary); font-size: 14px; line-height: 1.8; }
+.knowledge-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.knowledge-tag {
+  padding: 4px 10px; border-radius: 12px; font-size: 11px;
+  font-weight: 500; background: var(--tag-green); color: var(--tag-green-text);
+}
+
+/* ===== 错题本 ===== */
+.wrong-filter-row {
+  display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.wrong-filter-row select, .wrong-filter-row input {
+  padding: 9px 10px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs); font-size: 13px; outline: none;
+}
+.wrong-filter-row select:focus, .wrong-filter-row input:focus { border-color: var(--olive); }
+.wrong-filter-row input { flex: 1; min-width: 100px; }
+.wrong-card {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm); padding: 14px; margin-bottom: 10px;
+}
+.wrong-card-header {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.wrong-question { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.wrong-detail { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; line-height: 1.7; }
+.wrong-detail strong { color: var(--olive-dark); }
+.wrong-review-badge {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+}
+.wrong-review-badge.r2 { background: #FFF9C4; color: #F57F17; }
+.wrong-review-badge.r3 { background: #FFCDD2; color: #C62828; }
+
+/* ===== 模考 ===== */
+.mock-form-row {
+  display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;
+}
+.mock-form-row input, .mock-form-row select {
+  flex: 1; min-width: 100px;
+  padding: 10px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs); font-size: 14px; outline: none;
+}
+.mock-form-row input:focus, .mock-form-row select:focus { border-color: var(--olive); }
+.mock-history { max-height: 200px; overflow-y: auto; margin-top: 8px; }
+.mock-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-radius: var(--radius-xs); margin-bottom: 2px;
+}
+.mock-score { font-weight: 700; font-size: 16px; }
+.mock-score.high { color: #388E3C; }
+.mock-score.mid { color: var(--olive); }
+.mock-score.low { color: #E65100; }
+.mock-date { font-size: 12px; color: var(--text-light); }
+.mock-chart-box { margin-top: 10px; }
+.mock-chart-box canvas { width: 100%; height: 160px; }
+
+/* ===== 饮水打卡 ===== */
+.water-progress {
+  height: 14px; background: #E3F2FD; border-radius: 7px;
+  overflow: hidden; margin: 10px 0;
+}
+.water-fill {
+  height: 100%; background: linear-gradient(90deg, #42A5F5, #1E88E5);
+  border-radius: 7px; transition: width 0.5s ease;
+}
+.water-info { display: flex; justify-content: space-between; align-items: center; }
+.water-current { font-size: 26px; font-weight: 700; color: #1E88E5; }
+.water-target { font-size: 13px; color: var(--text-light); }
+.water-btns { display: flex; gap: 8px; margin-top: 10px; }
+.water-btn {
+  flex: 1; padding: 12px; border: 1.5px solid #BBDEFB;
+  border-radius: var(--radius-xs); background: white; cursor: pointer;
+  font-weight: 600; font-size: 14px; color: #1E88E5;
+}
+.water-btn:active { background: #E3F2FD; }
+.water-history { margin-top: 10px; display: flex; gap: 4px; }
+.water-day { flex: 1; text-align: center; font-size: 10px; }
+.water-day-bar {
+  height: 36px; background: var(--border-light);
+  border-radius: 4px; margin-bottom: 3px; position: relative; overflow: hidden;
+}
+.water-day-fill {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: #90CAF9; border-radius: 4px;
+}
+
+/* ===== 散步 ===== */
+.walk-form { display: flex; gap: 8px; margin-bottom: 10px; }
+.walk-form input {
+  flex: 1; padding: 10px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs); font-size: 14px; outline: none;
+}
+.walk-form input:focus { border-color: var(--olive); }
+.walk-log { max-height: 160px; overflow-y: auto; }
+.walk-log-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 10px; border-radius: var(--radius-xs); margin-bottom: 2px;
+  font-size: 13px;
+}
+
+/* ===== 菜谱 ===== */
+.recipe-date { font-size: 12px; color: var(--text-light); margin-bottom: 10px; }
+.recipe-cards { display: flex; flex-direction: column; gap: 8px; }
+.recipe-card {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm); padding: 14px; cursor: pointer;
+}
+.recipe-card:active { border-color: var(--olive-light); background: #FAFAF8; }
+.recipe-card-header {
+  display: flex; align-items: center; gap: 6px;
+  font-weight: 600; font-size: 15px;
+}
+.recipe-detail {
+  display: none; margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid var(--border-light);
+  font-size: 13px; color: var(--text-secondary); line-height: 1.8;
+}
+.recipe-card.expanded .recipe-detail { display: block; }
+.recipe-section { margin-bottom: 6px; }
+.recipe-section strong { color: var(--olive-dark); }
+
+/* ===== 健康备忘 ===== */
+.health-memo-item {
+  padding: 12px 14px; border-left: 3px solid var(--olive-light);
+  margin-bottom: 8px; background: #FAFAF8;
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+}
+.health-memo-item.warn { border-left-color: #E65100; background: #FFF8E1; }
+.memo-title { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+.memo-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+
+/* ===== 弹窗（底部弹出式，适配手机） ===== */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4); z-index: 200;
+  align-items: flex-end; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: white; border-radius: 20px 20px 0 0;
+  padding: 24px 20px calc(20px + var(--safe-bottom));
+  width: 100%; max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal-title {
+  font-size: 17px; font-weight: 700; margin-bottom: 16px;
+  text-align: center;
+}
+.modal input, .modal select, .modal textarea {
+  width: 100%; padding: 12px 14px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-xs);
+  font-size: 15px; outline: none; margin-bottom: 10px; font-family: inherit;
+}
+.modal input:focus, .modal select:focus, .modal textarea:focus { border-color: var(--olive); }
+.modal textarea { min-height: 80px; resize: vertical; }
+.modal label { font-size: 13px; color: var(--text-secondary); display: block; margin-bottom: 4px; }
+.modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+.modal-actions .btn { flex: 1; }
+
+/* ===== 页面切换 ===== */
+.page { display: none; }
+.page.active { display: flex; flex-direction: column; gap: 12px; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed; top: calc(60px + var(--safe-top)); left: 50%; transform: translateX(-50%);
+  background: var(--olive-dark); color: white;
+  padding: 10px 20px; border-radius: 20px; font-size: 14px;
+  z-index: 300; animation: fadeIn 0.3s ease;
+  pointer-events: none;
+}
+
+/* ===== 动画 ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.card { animation: fadeIn 0.35s ease; }
+
+/* ===== 滚动条 ===== */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #DDD; border-radius: 2px; }
+
+/* ===== 分隔标题 ===== */
+.section-divider {
+  font-size: 13px; font-weight: 700; color: var(--olive);
+  padding: 4px 0; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.section-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--olive-pale);
+}
+
+/* ===== 科目分区 ===== */
+.subject-section { margin-bottom: 14px; }
+.subject-header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 12px; background: var(--olive-bg);
+  border-radius: var(--radius-xs); margin-bottom: 6px;
+  font-size: 13px; font-weight: 600; color: var(--olive-dark);
+  cursor: pointer; user-select: none;
+  transition: var(--transition);
+}
+.subject-header:active { background: var(--olive-pale); }
+.subject-icon { font-size: 15px; }
+.subject-name { flex: 1; }
+.subject-count { font-size: 11px; color: var(--text-light); font-weight: 500; }
+.subject-toggle { font-size: 10px; color: var(--text-light); transition: transform 0.2s ease; }
+.subject-section.collapsed .subject-toggle { transform: rotate(-90deg); }
+.subject-section.collapsed .subject-body { display: none; }
+.subject-body { }
+.subject-input-row {
+  display: flex; gap: 6px; margin-bottom: 6px;
+}
+.subject-input-row input {
+  flex: 1; padding: 8px 10px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs); font-size: 13px; outline: none;
+}
+.subject-input-row input:focus { border-color: var(--olive); }
+.subject-task-list { list-style: none; }
+
+/* ===== 双列网格（仅限大屏手机横屏，默认堆叠） ===== */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+</style>
+</head>
+<body>
+
+<!-- ===== 顶部导航（快速切换用） ===== -->
+<nav class="top-nav">
+  <div class="nav-brand">🧘🏻‍♀️ 阿鱼的小助理</div>
+  <div class="nav-tabs-scroll" id="topTabs">
+    <button class="nav-tab active" data-page="home">🏠 首页</button>
+    <button class="nav-tab" data-page="plan">📅 备考规划</button>
+    <button class="nav-tab" data-page="xingce">📖 行测</button>
+    <button class="nav-tab" data-page="shenlun">📝 申论</button>
+    <button class="nav-tab" data-page="wrongbook">❌ 错题</button>
+    <button class="nav-tab" data-page="health">🥗 健康</button>
+  </div>
+</nav>
+
+<!-- ===== 主内容区 ===== -->
+<div class="main-content" id="mainContent">
+
+  <!-- ===== 首页总看板 ===== -->
+  <div class="page active" id="page-home">
+    <!-- 倒计时横幅 -->
+    <div class="countdown-banner">
+      <div class="countdown-top">
+        <span class="countdown-label">2027广东省考倒计时</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="countdown-phase" id="currentPhase">📐 精讲阶段</span>
+          <button class="countdown-edit" onclick="openDateModal()">⚙️</button>
+        </div>
+      </div>
+      <div class="countdown-days" id="countdownDays">--<span>天</span></div>
+      <div class="countdown-note" id="countdownNote"></div>
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-value" id="totalProgress">0%</div>
+          <div class="stat-label">总进度</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="totalAccuracy">--%</div>
+          <div class="stat-label">模考正确率</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="totalDays">0</div>
+          <div class="stat-label">打卡天数</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 今日任务 -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title"><span class="icon">✅</span> 今日任务</div>
+          <div class="card-subtitle" id="todayDate"></div>
+        </div>
+        <span style="font-size:13px;color:var(--text-light);" id="taskStats">0/0</span>
+      </div>
+      <div class="task-input-row">
+        <input type="text" id="taskInput" placeholder="添加任务..." onkeypress="if(event.key==='Enter')addTask()">
+        <select id="taskPhase" style="min-width:90px;">
+          <option value="精讲阶段">精讲</option>
+          <option value="夸夸刷阶段">夸夸刷</option>
+          <option value="超大杯阶段">超大杯</option>
+          <option value="生活">生活</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="addTask()">+</button>
+      </div>
+      <ul class="task-list" id="taskList"></ul>
+    </div>
+
+    <!-- 学习时长 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">⏱️</span> 学习时长</div>
+        <button class="btn btn-outline btn-xs" onclick="openDurationModal()">+ 记录</button>
+      </div>
+      <div class="duration-grid">
+        <div class="duration-item">
+          <div class="duration-value" id="durToday">0h</div>
+          <div class="duration-label">今日</div>
+        </div>
+        <div class="duration-item">
+          <div class="duration-value" id="durWeek">0h</div>
+          <div class="duration-label">本周</div>
+        </div>
+        <div class="duration-item">
+          <div class="duration-value" id="durMonth">0h</div>
+          <div class="duration-label">本月</div>
+        </div>
+        <div class="duration-item">
+          <div class="duration-value" id="durAvg">0h</div>
+          <div class="duration-label">日均</div>
+        </div>
+      </div>
+      <div class="duration-sub">
+        刷题 <span id="durXingce">0h</span> · 申论 <span id="durShenlun">0h</span> · 听课 <span id="durTingke">0h</span> · 复盘 <span id="durCuoti">0h</span>
+      </div>
+      <div class="chart-box"><canvas id="durationChart"></canvas></div>
+    </div>
+
+    <!-- 每日复盘 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📝</span> 每日复盘</div>
+        <button class="btn btn-outline btn-xs" onclick="saveReview()">保存</button>
+      </div>
+      <textarea class="review-textarea" id="reviewText" placeholder="记录听课难点、薄弱考点、次日计划..."></textarea>
+    </div>
+
+    <!-- 模考 & 打卡 -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="icon">📊</span> 模考 & 打卡</div></div>
+
+      <div class="section-divider">📝 模考成绩录入</div>
+      <div class="mock-form-row">
+        <input type="date" id="mockDate" style="flex:1;">
+        <input type="number" id="mockScore" placeholder="分数" step="0.5" min="0" max="100" style="flex:1;">
+      </div>
+      <button class="btn btn-primary btn-sm btn-block" onclick="addMockScore()">录入成绩</button>
+      <div class="mock-history" id="mockHistory"></div>
+
+      <div class="section-divider" style="margin-top:14px;">📋 课程打卡</div>
+      <select id="checkinType" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;margin-bottom:8px;">
+        <option value="精讲课">精讲课打卡</option>
+        <option value="夸夸刷">夸夸刷题打卡</option>
+        <option value="超大杯模考卷">超大杯模考卷</option>
+      </select>
+      <input type="text" id="checkinDesc" placeholder="简述内容..." style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;margin-bottom:8px;">
+      <button class="btn btn-primary btn-sm btn-block" onclick="addCheckin()">打卡</button>
+      <div class="mock-history" id="checkinHistory"></div>
+
+      <div class="mock-chart-box"><canvas id="mockChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ===== 三阶段备考规划 ===== -->
+  <div class="page" id="page-plan">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="icon">📅</span> 三阶段备考规划</div></div>
+
+      <div class="phase-section" id="phaseSec1">
+        <div class="phase-header">
+          <div class="phase-number">1</div>
+          <div class="phase-info">
+            <div class="phase-name">精讲阶段 · 理论地基</div>
+            <div class="phase-goal">跟随超格精讲课程，搭建行测、申论完整知识框架</div>
+          </div>
+          <div class="phase-progress-text" id="phase1Pct">0%</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="phase1Bar" style="width:0%"></div></div>
+        <div class="phase-materials">📦 超格精讲讲义、课堂笔记、思维导图</div>
+        <div id="phase1Subjects"></div>
+      </div>
+
+      <div class="phase-section" id="phaseSec2">
+        <div class="phase-header">
+          <div class="phase-number p2">2</div>
+          <div class="phase-info">
+            <div class="phase-name">夸夸刷阶段 · 刷题强化</div>
+            <div class="phase-goal">分模块刷题，总结题型套路、广东特色考法</div>
+          </div>
+          <div class="phase-progress-text" id="phase2Pct">0%</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="phase2Bar" style="width:0%"></div></div>
+        <div class="phase-materials">📦 夸夸刷题集、刷题听课笔记</div>
+        <div id="phase2Subjects"></div>
+      </div>
+
+      <div class="phase-section" id="phaseSec3">
+        <div class="phase-header">
+          <div class="phase-number p3">3</div>
+          <div class="phase-info">
+            <div class="phase-name">超大杯冲刺 · 套卷模考</div>
+            <div class="phase-goal">限时整套训练，适应考场节奏、查漏补缺</div>
+          </div>
+          <div class="phase-progress-text" id="phase3Pct">0%</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="phase3Bar" style="width:0%"></div></div>
+        <div class="phase-materials">📦 超大杯模考卷、冲刺讲义、申论热点素材</div>
+        <div id="phase3Subjects"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 行测知识库 ===== -->
+  <div class="page" id="page-xingce">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📖</span> 行测知识库</div>
+        <span style="font-size:11px;color:var(--text-light);">五大模块</span>
+      </div>
+      <div id="xingceModules"></div>
+    </div>
+  </div>
+
+  <!-- ===== 申论知识库 ===== -->
+  <div class="page" id="page-shenlun">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📝</span> 申论知识库</div>
+        <span style="font-size:11px;color:var(--text-light);">四大板块</span>
+      </div>
+      <div id="shenlunModules"></div>
+    </div>
+  </div>
+
+  <!-- ===== 错题本 ===== -->
+  <div class="page" id="page-wrongbook">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">❌</span> 错题本</div>
+        <button class="btn btn-primary btn-sm" onclick="openWrongModal()">+ 录入</button>
+      </div>
+      <div class="wrong-filter-row">
+        <select id="wrongFilterPhase" onchange="renderWrongBook()" style="flex:1;min-width:80px;">
+          <option value="">全部阶段</option>
+          <option value="精讲阶段">精讲</option>
+          <option value="夸夸刷阶段">夸夸刷</option>
+          <option value="超大杯阶段">超大杯</option>
+        </select>
+        <select id="wrongFilterModule" onchange="renderWrongBook()" style="flex:1;min-width:80px;">
+          <option value="">全部模块</option>
+          <option value="言语理解">言语理解</option>
+          <option value="图形推理">图形推理</option>
+          <option value="逻辑判断">逻辑判断</option>
+          <option value="科学推理">科学推理</option>
+          <option value="资料分析">资料分析</option>
+          <option value="数量关系">数量关系</option>
+          <option value="政治理论">政治理论</option>
+          <option value="常识">常识</option>
+          <option value="申论">申论</option>
+        </select>
+      </div>
+      <input type="text" id="wrongFilterSearch" placeholder="🔍 搜索题目..." oninput="renderWrongBook()" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;outline:none;margin-bottom:10px;">
+      <div id="wrongBookList"></div>
+    </div>
+  </div>
+
+  <!-- ===== 生活健康中心 ===== -->
+  <div class="page" id="page-health">
+    <!-- 饮水 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">💧</span> 饮水打卡</div>
+        <span style="font-size:12px;color:var(--text-light);">1500ml/天</span>
+      </div>
+      <div class="water-info">
+        <div class="water-current" id="waterCurrent">0ml</div>
+        <div class="water-target">目标 1500ml</div>
+      </div>
+      <div class="water-progress"><div class="water-fill" id="waterFill" style="width:0%"></div></div>
+      <div class="water-btns">
+        <button class="water-btn" onclick="addWater(250)">+250ml</button>
+        <button class="water-btn" onclick="addWater(500)">+500ml</button>
+        <button class="btn btn-ghost btn-xs" onclick="resetWater()">重置</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-light);margin-top:6px;">💡 优先纯净水，少量多次</div>
+      <div class="water-history" id="waterHistory"></div>
+    </div>
+
+    <!-- 散步 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🚶‍♀️</span> 散步记录</div>
+        <span style="font-size:12px;color:var(--text-light);">眼部放松</span>
+      </div>
+      <div class="walk-form">
+        <input type="number" id="walkMinutes" placeholder="时长（分钟）" min="5" max="180">
+        <button class="btn btn-primary btn-sm" onclick="addWalk()">记录</button>
+      </div>
+      <div class="walk-log" id="walkLog"></div>
+    </div>
+
+    <!-- 菜谱 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🥗</span> 智能菜谱</div>
+        <span style="font-size:12px;color:var(--text-light);">30天循环</span>
+      </div>
+      <div class="recipe-date" id="recipeDate"></div>
+      <div class="recipe-cards" id="recipeCards"></div>
+      <button class="btn btn-outline btn-sm btn-block" onclick="copyShoppingList()" style="margin-top:10px;">📋 复制买菜清单</button>
+    </div>
+
+    <!-- 健康备忘 -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="icon">📋</span> 健康备忘录</div></div>
+      <div id="healthMemos"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 底部导航 ===== -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-tab active" data-page="home">
+    <span class="bt-icon">🏠</span><span class="bt-label">总看板</span>
+  </button>
+  <button class="bottom-tab" data-page="plan">
+    <span class="bt-icon">📅</span><span class="bt-label">备考规划</span>
+  </button>
+  <button class="bottom-tab" data-page="wrongbook">
+    <span class="bt-icon">❌</span><span class="bt-label">错题本</span>
+  </button>
+  <button class="bottom-tab" data-page="health">
+    <span class="bt-icon">🥗</span><span class="bt-label">健康中心</span>
+  </button>
+</nav>
+
+<!-- ===== 弹窗：修改日期 ===== -->
+<div class="modal-overlay" id="dateModal">
+  <div class="modal">
+    <div class="modal-title">⚙️ 设置笔试日期</div>
+    <label>目标日期</label>
+    <input type="date" id="targetDateInput">
+    <label>备注</label>
+    <input type="text" id="targetDateNote" placeholder="如：预计笔试时间 2026年12月上旬">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeDateModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveTargetDate()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 弹窗：学习时长 ===== -->
+<div class="modal-overlay" id="durationModal">
+  <div class="modal">
+    <div class="modal-title">⏱️ 录入学习时长</div>
+    <label>日期</label>
+    <input type="date" id="durDateInput">
+    <label>类型</label>
+    <select id="durTypeInput">
+      <option value="行测刷题">行测刷题</option>
+      <option value="申论学习">申论学习</option>
+      <option value="听课">听课</option>
+      <option value="错题复盘">错题复盘</option>
+    </select>
+    <label>时长（分钟）</label>
+    <input type="number" id="durMinutesInput" placeholder="分钟数" min="5">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeDurationModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveDuration()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 弹窗：错题 ===== -->
+<div class="modal-overlay" id="wrongModal">
+  <div class="modal">
+    <div class="modal-title">❌ 录入错题</div>
+    <label>题目内容</label>
+    <textarea id="wrongQuestionInput" placeholder="输入题目内容..."></textarea>
+    <div style="display:flex;gap:8px;">
+      <div style="flex:1;"><label>阶段</label>
+        <select id="wrongPhaseInput">
+          <option value="精讲阶段">精讲</option>
+          <option value="夸夸刷阶段">夸夸刷</option>
+          <option value="超大杯阶段">超大杯</option>
+        </select>
+      </div>
+      <div style="flex:1;"><label>模块</label>
+        <select id="wrongModuleInput">
+          <option value="言语理解">言语理解</option>
+          <option value="图形推理">图形推理</option>
+          <option value="逻辑判断">逻辑判断</option>
+          <option value="科学推理">科学推理</option>
+          <option value="资料分析">资料分析</option>
+          <option value="数量关系">数量关系</option>
+          <option value="政治理论">政治理论</option>
+          <option value="常识">常识</option>
+          <option value="申论">申论</option>
+        </select>
+      </div>
+    </div>
+    <label>错误原因</label>
+    <textarea id="wrongReasonInput" placeholder="分析错误原因..."></textarea>
+    <label>正确解题思路</label>
+    <textarea id="wrongSolutionInput" placeholder="正确解法..."></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeWrongModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveWrong()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== 数据 ====================
+// ==================== 9科目定义 ====================
+const SUBJECTS = [
+  { key:'yuyan',   name:'言语理解', icon:'🗣️' },
+  { key:'tuxing',  name:'图形推理', icon:'🧩' },
+  { key:'luoji',   name:'逻辑判断', icon:'⚖️' },
+  { key:'kexue',   name:'科学推理', icon:'🔬' },
+  { key:'ziliao',  name:'资料分析', icon:'📈' },
+  { key:'shuliang', name:'数量关系', icon:'🔢' },
+  { key:'zhengzhi', name:'政治理论', icon:'🏛️' },
+  { key:'changshi', name:'常识',     icon:'💡' },
+  { key:'shenlun',  name:'申论',     icon:'📝' }
+];
+
+const SK = 'ayu_v2';
+function ld() { try { const r=localStorage.getItem(SK); return r?JSON.parse(r):def(); } catch(e) { return def(); } }
+function def() {
+  // 将旧版扁平数组迁移为按科目结构
+  return {
+    targetDate:'2026-12-07', targetNote:'预计笔试时间 2026年12月上旬 · 以官方公告为准',
+    tasks:[], durations:[], reviewText:'', reviewDate:new Date().toISOString().split('T')[0],
+    mockScores:[], checkins:[], wrongBook:[], waterLog:{}, walkLog:[],
+    // 三个阶段各按科目存储
+    p1: buildEmptySubjects(),
+    p2: buildEmptySubjects(),
+    p3: buildEmptySubjects()
+  };
+}
+function buildEmptySubjects() {
+  const o = {};
+  SUBJECTS.forEach(s => o[s.key] = []);
+  return o;
+}
+// 兼容旧数据：如果 p1/p2/p3 是扁平数组，迁移到 'other' 类别下
+function migratePhaseData(phaseData) {
+  if (Array.isArray(phaseData)) {
+    const o = buildEmptySubjects();
+    o.other = phaseData;
+    return o;
+  }
+  // 确保每个科目 key 都存在
+  SUBJECTS.forEach(s => {
+    if (!phaseData[s.key]) phaseData[s.key] = [];
+  });
+  return phaseData;
+}
+function sv() { localStorage.setItem(SK, JSON.stringify(appData)); }
+let appData = ld();
+// 启动时迁移旧数据
+appData.p1 = migratePhaseData(appData.p1 || []);
+appData.p2 = migratePhaseData(appData.p2 || []);
+appData.p3 = migratePhaseData(appData.p3 || []);
+sv();
+
+// ==================== Toast ====================
+function toast(msg) {
+  const t = document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(), 1800);
+}
+
+// ==================== 导航 ====================
+function switchPage(pageId) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const pg = document.getElementById('page-'+pageId);
+  if (pg) pg.classList.add('active');
+
+  // 同步顶部Tab
+  document.querySelectorAll('#topTabs .nav-tab').forEach(t=>t.classList.remove('active'));
+  const tt = document.querySelector(`#topTabs [data-page="${pageId}"]`);
+  if (tt) tt.classList.add('active');
+
+  // 同步底部Tab
+  document.querySelectorAll('#bottomNav .bottom-tab').forEach(t=>t.classList.remove('active'));
+  const bt = document.querySelector(`#bottomNav [data-page="${pageId}"]`);
+  if (bt) bt.classList.add('active');
+
+  // 滚动到顶部
+  window.scrollTo({top:0,behavior:'smooth'});
+
+  // 刷新对应页面
+  if (pageId==='plan') renderPlan();
+  if (pageId==='xingce') renderXC();
+  if (pageId==='shenlun') renderSL();
+  if (pageId==='wrongbook') renderWB();
+  if (pageId==='health') renderHealth();
+}
+
+document.querySelectorAll('#topTabs .nav-tab, #bottomNav .bottom-tab').forEach(el=>{
+  el.addEventListener('click', function(){ switchPage(this.dataset.page); });
+});
+
+// ==================== 倒计时 ====================
+function updateCD() {
+  const t = new Date(appData.targetDate+'T00:00:00+08:00');
+  const n = new Date(); const diff = t-n;
+  const days = Math.max(0, Math.ceil(diff/(86400000)));
+  document.getElementById('countdownDays').innerHTML = days+'<span>天</span>';
+  document.getElementById('countdownNote').textContent = appData.targetNote||'';
+  let ph='📐 精讲阶段'; if(days<=60)ph='🏃 超大杯冲刺'; else if(days<=120)ph='💪 夸夸刷阶段';
+  document.getElementById('currentPhase').textContent=ph;
+}
+function openDateModal(){ document.getElementById('targetDateInput').value=appData.targetDate; document.getElementById('targetDateNote').value=appData.targetNote||''; document.getElementById('dateModal').classList.add('show'); }
+function closeDateModal(){ document.getElementById('dateModal').classList.remove('show'); }
+function saveTargetDate(){ appData.targetDate=document.getElementById('targetDateInput').value; appData.targetNote=document.getElementById('targetDateNote').value; sv(); updateCD(); closeDateModal(); }
+
+// ==================== 任务 ====================
+function renderTasks() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('todayDate').textContent = '📅 '+today;
+  const tt = appData.tasks.filter(t=>!t.date||t.date===today);
+  document.getElementById('taskList').innerHTML = tt.map((t,i)=>{
+    const bg=t.phase==='精讲阶段'?'var(--tag-green)':t.phase==='夸夸刷阶段'?'var(--tag-blue)':t.phase==='超大杯阶段'?'var(--tag-orange)':'var(--tag-purple)';
+    const cl=t.phase==='精讲阶段'?'var(--tag-green-text)':t.phase==='夸夸刷阶段'?'var(--tag-blue-text)':t.phase==='超大杯阶段'?'var(--tag-orange-text)':'var(--tag-purple-text)';
+    return `<li class="task-item ${t.done?'completed':''}">
+      <div class="task-checkbox ${t.done?'done':''}" onclick="tgTask('${t.id}')">✓</div>
+      <span class="task-text">${esc(t.text)}</span>
+      <span class="task-tag" style="background:${bg};color:${cl};">${t.phase}</span>
+      <button class="task-delete" onclick="delTask('${t.id}')">✕</button>
+    </li>`;
+  }).join('');
+  const done=tt.filter(t=>t.done).length;
+  document.getElementById('taskStats').textContent=done+'/'+tt.length;
+}
+function addTask(){
+  const tx=document.getElementById('taskInput').value.trim(); if(!tx) return;
+  appData.tasks.unshift({id:Date.now().toString(),text:tx,phase:document.getElementById('taskPhase').value,done:false,date:new Date().toISOString().split('T')[0]});
+  sv(); document.getElementById('taskInput').value=''; renderTasks(); upStats();
+}
+function tgTask(id){ const t=appData.tasks.find(t=>t.id===id); if(t){t.done=!t.done;sv();renderTasks();upStats();} }
+function delTask(id){ appData.tasks=appData.tasks.filter(t=>t.id!==id); sv(); renderTasks(); upStats(); }
+
+// ==================== 时长 ====================
+function renderDur(){
+  const today=new Date().toISOString().split('T')[0];
+  const ws=(d=>{const dy=d.getDay();d.setDate(d.getDate()-dy+(dy===0?-6:1));return d.toISOString().split('T')[0];})(new Date());
+  const ms=new Date().toISOString().slice(0,8)+'01';
+  const td=appData.durations.filter(d=>d.date===today);
+  const wd=appData.durations.filter(d=>d.date>=ws);
+  const md=appData.durations.filter(d=>d.date>=ms);
+  const sm=a=>a.reduce((s,d)=>s+d.minutes,0);
+  const tm=sm(td),wm=sm(wd),mm=sm(md);
+  document.getElementById('durToday').textContent=(tm/60).toFixed(1)+'h';
+  document.getElementById('durWeek').textContent=(wm/60).toFixed(1)+'h';
+  document.getElementById('durMonth').textContent=(mm/60).toFixed(1)+'h';
+  document.getElementById('durAvg').textContent=(mm/60/Math.max(1,new Date().getDate())).toFixed(1)+'h';
+  const cs=(a,cat)=>a.filter(d=>d.type===cat).reduce((s,d)=>s+d.minutes,0);
+  document.getElementById('durXingce').textContent=(cs(td,'行测刷题')/60).toFixed(1)+'h';
+  document.getElementById('durShenlun').textContent=(cs(td,'申论学习')/60).toFixed(1)+'h';
+  document.getElementById('durTingke').textContent=(cs(td,'听课')/60).toFixed(1)+'h';
+  document.getElementById('durCuoti').textContent=(cs(td,'错题复盘')/60).toFixed(1)+'h';
+  drawDurChart();
+}
+function drawDurChart(){
+  const cv=document.getElementById('durationChart'); if(!cv) return;
+  const ctx=cv.getContext('2d');
+  const w=cv.width=cv.parentElement.clientWidth;
+  const h=cv.height=100; ctx.clearRect(0,0,w,h);
+  const days=[]; for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i);
+    const ds=d.toISOString().split('T')[0]; const m=appData.durations.filter(dr=>dr.date===ds).reduce((s,dr)=>s+dr.minutes,0);
+    days.push({date:ds.slice(5),minutes:m}); }
+  const mx=Math.max(...days.map(d=>d.minutes),60); const bw=(w-50)/7-6; const ch=h-25;
+  ctx.strokeStyle='#F0F0F0'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){ const y=8+(ch/4)*i; ctx.beginPath(); ctx.moveTo(35,y); ctx.lineTo(w-8,y); ctx.stroke(); }
+  days.forEach((d,i)=>{
+    const x=38+i*((w-50)/7)+3; const bh=Math.max(2,(d.minutes/mx)*ch); const y=8+ch-bh;
+    const g=ctx.createLinearGradient(x,y,x,8+ch); g.addColorStop(0,'#7D9B4E'); g.addColorStop(1,'#A8C97A');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.roundRect(x,y,bw,bh,4); ctx.fill();
+    ctx.fillStyle='#999'; ctx.font='9px -apple-system,sans-serif'; ctx.textAlign='center'; ctx.fillText(d.date,x+bw/2,h-4);
+    if(d.minutes>0){ ctx.fillStyle='#556B2F'; ctx.font='bold 9px -apple-system,sans-serif'; ctx.fillText((d.minutes/60).toFixed(1)+'h',x+bw/2,y-5); }
+  });
+}
+function openDurationModal(){ document.getElementById('durDateInput').value=new Date().toISOString().split('T')[0]; document.getElementById('durationModal').classList.add('show'); }
+function closeDurationModal(){ document.getElementById('durationModal').classList.remove('show'); }
+function saveDuration(){
+  const d={date:document.getElementById('durDateInput').value,type:document.getElementById('durTypeInput').value,minutes:parseInt(document.getElementById('durMinutesInput').value)||0};
+  if(d.minutes<=0) return; appData.durations.push(d); sv(); renderDur(); closeDurationModal();
+}
+
+// ==================== 复盘 ====================
+function renderReview(){
+  const today=new Date().toISOString().split('T')[0];
+  if(appData.reviewDate!==today){ appData.reviewText=''; appData.reviewDate=today; }
+  document.getElementById('reviewText').value=appData.reviewText||'';
+}
+function saveReview(){ appData.reviewText=document.getElementById('reviewText').value; appData.reviewDate=new Date().toISOString().split('T')[0]; sv(); toast('复盘已保存 ✓'); }
+
+// ==================== 模考 ====================
+function renderMock(){
+  const sorted=[...appData.mockScores].sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('mockHistory').innerHTML=sorted.map(m=>{
+    const cls=m.score>=80?'high':m.score>=70?'mid':'low';
+    return `<div class="mock-item"><span class="mock-date">${m.date}</span><span class="mock-score ${cls}">${m.score}分</span><button class="btn btn-ghost btn-xs" onclick="delMock('${m.id}')">删</button></div>`;
+  }).join('');
+  drawMockChart();
+}
+function addMockScore(){
+  const date=document.getElementById('mockDate').value,score=parseFloat(document.getElementById('mockScore').value);
+  if(!date||isNaN(score)) return;
+  appData.mockScores.push({id:Date.now().toString(),date,score}); sv(); document.getElementById('mockScore').value=''; renderMock(); upStats();
+}
+function delMock(id){ appData.mockScores=appData.mockScores.filter(m=>m.id!==id); sv(); renderMock(); upStats(); }
+function drawMockChart(){
+  const cv=document.getElementById('mockChart'); if(!cv) return;
+  const ctx=cv.getContext('2d');
+  const w=cv.width=cv.parentElement.clientWidth;
+  const h=cv.height=160; ctx.clearRect(0,0,w,h);
+  const sorted=[...appData.mockScores].sort((a,b)=>a.date.localeCompare(b.date));
+  if(sorted.length<2){ ctx.fillStyle='#CCC'; ctx.font='13px -apple-system,sans-serif'; ctx.textAlign='center'; ctx.fillText('录入2次以上成绩后显示趋势',w/2,h/2); return; }
+  const pad={top:16,right:16,bottom:28,left:36}; const cw=w-pad.left-pad.right; const cch=h-pad.top-pad.bottom;
+  ctx.strokeStyle='#F0F0F0'; ctx.lineWidth=1;
+  for(let s=50;s<=100;s+=10){ const y=pad.top+cch-((s-50)/50)*cch; ctx.beginPath(); ctx.moveTo(pad.left,y); ctx.lineTo(w-pad.right,y); ctx.stroke(); ctx.fillStyle='#CCC'; ctx.font='10px -apple-system,sans-serif'; ctx.textAlign='right'; ctx.fillText(s,pad.left-6,y+3); }
+  const y70=pad.top+cch-((70-50)/50)*cch;
+  ctx.strokeStyle='#FF9800'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(pad.left,y70); ctx.lineTo(w-pad.right,y70); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='#556B2F'; ctx.lineWidth=2.5; ctx.lineJoin='round'; ctx.beginPath();
+  sorted.forEach((m,i)=>{ const x=pad.left+(i/Math.max(sorted.length-1,1))*cw; const y=pad.top+cch-((m.score-50)/50)*cch; if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }); ctx.stroke();
+  sorted.forEach((m,i)=>{ const x=pad.left+(i/Math.max(sorted.length-1,1))*cw; const y=pad.top+cch-((m.score-50)/50)*cch;
+    ctx.fillStyle=m.score<70?'#FF9800':'#556B2F'; ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#333'; ctx.font='bold 10px -apple-system,sans-serif'; ctx.textAlign='center'; ctx.fillText(m.score,x,y-10);
+    ctx.fillStyle='#999'; ctx.font='9px -apple-system,sans-serif'; ctx.fillText(m.date.slice(5),x,h-8); });
+}
+
+// ==================== 打卡 ====================
+function renderCheckins(){
+  const sorted=[...appData.checkins].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15);
+  document.getElementById('checkinHistory').innerHTML=sorted.map(c=>{
+    const bg=c.type==='精讲课'?'var(--tag-green)':c.type==='夸夸刷'?'var(--tag-blue)':'var(--tag-orange)';
+    const cl=c.type==='精讲课'?'var(--tag-green-text)':c.type==='夸夸刷'?'var(--tag-blue-text)':'var(--tag-orange-text)';
+    return `<div class="mock-item"><span><span class="task-tag" style="background:${bg};color:${cl};">${c.type}</span><span style="font-size:13px;margin-left:4px;">${esc(c.desc||'')}</span></span><span style="font-size:11px;color:var(--text-light);">${c.date}</span></div>`;
+  }).join('');
+}
+function addCheckin(){
+  appData.checkins.unshift({id:Date.now().toString(),date:new Date().toISOString().split('T')[0],type:document.getElementById('checkinType').value,desc:document.getElementById('checkinDesc').value.trim()});
+  sv(); document.getElementById('checkinDesc').value=''; renderCheckins(); upStats();
+}
+
+// ==================== 三阶段（按9科目分区） ====================
+function renderPlan(){
+  [1,2,3].forEach(n=>{
+    const key='p'+n;
+    const container = document.getElementById(`phase${n}Subjects`);
+    if(!container) return;
+    // 渲染9个科目分区
+    container.innerHTML = SUBJECTS.map(sub => {
+      const tasks = (appData[key] && appData[key][sub.key]) || [];
+      const done = tasks.filter(t=>t.done).length;
+      const total = tasks.length;
+      return `<div class="subject-section" id="ph${n}_${sub.key}">
+        <div class="subject-header" onclick="toggleSubject('ph${n}_${sub.key}')">
+          <span class="subject-icon">${sub.icon}</span>
+          <span class="subject-name">${sub.name}</span>
+          <span class="subject-count">${done}/${total}</span>
+          <span class="subject-toggle">▼</span>
+        </div>
+        <div class="subject-body">
+          <div class="subject-input-row">
+            <input type="text" id="phIn_${n}_${sub.key}" placeholder="添加${sub.name}任务..." onkeypress="if(event.key==='Enter')addSubTask(${n},'${sub.key}')">
+            <button class="btn btn-primary btn-xs" onclick="addSubTask(${n},'${sub.key}')">+</button>
+          </div>
+          <ul class="subject-task-list">${tasks.map(t=>`<li class="task-item ${t.done?'completed':''}">
+            <div class="task-checkbox ${t.done?'done':''}" onclick="tgSubTask(${n},'${sub.key}','${t.id}')">✓</div>
+            <span class="task-text">${esc(t.text)}</span>
+            <button class="task-delete" onclick="delSubTask(${n},'${sub.key}','${t.id}')">✕</button>
+          </li>`).join('')}</ul>
+        </div>
+      </div>`;
+    }).join('');
+    // 计算总进度
+    let allDone=0, allTotal=0;
+    SUBJECTS.forEach(sub=>{
+      const tasks=(appData[key]&&appData[key][sub.key])||[];
+      allDone+=tasks.filter(t=>t.done).length;
+      allTotal+=tasks.length;
+    });
+    const pct=allTotal>0?Math.round((allDone/allTotal)*100):0;
+    document.getElementById(`phase${n}Pct`).textContent=pct+'%';
+    document.getElementById(`phase${n}Bar`).style.width=pct+'%';
+  });
+}
+function toggleSubject(id){ document.getElementById(id).classList.toggle('collapsed'); }
+function addSubTask(n,subKey){
+  const tx=document.getElementById(`phIn_${n}_${subKey}`).value.trim(); if(!tx) return;
+  const key='p'+n; if(!appData[key])appData[key]=buildEmptySubjects();
+  if(!appData[key][subKey])appData[key][subKey]=[];
+  appData[key][subKey].push({id:Date.now().toString(),text:tx,done:false});
+  sv(); document.getElementById(`phIn_${n}_${subKey}`).value=''; renderPlan(); upStats();
+}
+function tgSubTask(n,subKey,id){
+  const key='p'+n; const tasks=(appData[key]&&appData[key][subKey])||[];
+  const t=tasks.find(t=>t.id===id); if(t){t.done=!t.done;sv();renderPlan();upStats();}
+}
+function delSubTask(n,subKey,id){
+  const key='p'+n;
+  if(appData[key]&&appData[key][subKey]){
+    appData[key][subKey]=appData[key][subKey].filter(t=>t.id!==id);
+  }
+  sv(); renderPlan(); upStats();
+}
+
+// ==================== 知识库 ====================
+const xcMods=[{name:'言语理解',icon:'🗣️',desc:'选词填空、片段阅读、语句表达',tags:['逻辑填空','阅读理解','语句排序','广东特色']},{name:'判断推理',icon:'🧩',desc:'图形推理、定义判断、类比推理、逻辑判断',tags:['图形推理','定义判断','类比推理','逻辑判断','科学推理']},{name:'资料分析',icon:'📈',desc:'增长量、增长率、比重、平均数、倍数',tags:['速算技巧','基期现期','增长率','比重问题']},{name:'数量关系',icon:'🔢',desc:'数学运算、数字推理',tags:['工程问题','行程问题','排列组合','广东数推']},{name:'常识判断',icon:'💡',desc:'政治、法律、经济、人文、科技',tags:['时政热点','法律常识','文史知识','广东省情']}];
+function renderXC(){
+  document.getElementById('xingceModules').innerHTML=xcMods.map((m,i)=>`<div class="accordion" id="xcAcc${i}"><div class="accordion-header" onclick="tgAcc('xcAcc${i}')"><span>${m.icon} ${m.name}</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><p style="margin-top:8px;color:var(--text-light);font-style:italic;">📤 上传超格笔记、讲义填充</p></div></div></div>`).join('');
+}
+const slMods=[{name:'基础题型框架',icon:'📋',desc:'概括归纳、综合分析、提出对策、贯彻执行',tags:['概括题','分析题','对策题','公文题']},{name:'应用文格式大全',icon:'📄',desc:'通知、报告、倡议书、讲话稿、调研报告',tags:['法定公文','事务文书','格式规范']},{name:'大作文素材库',icon:'✍️',desc:'开头模板、论证方法、结尾金句、热点素材',tags:['开头结尾','论证结构','名言金句','案例素材']},{name:'广东申论阅卷注意事项',icon:'⚠️',desc:'阅卷标准、常见失分点、高分特征',tags:['阅卷规则','评分标准','广东命题特点']}];
+function renderSL(){
+  document.getElementById('shenlunModules').innerHTML=slMods.map((m,i)=>`<div class="accordion" id="slAcc${i}"><div class="accordion-header" onclick="tgAcc('slAcc${i}')"><span>${m.icon} ${m.name}</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><p style="margin-top:8px;color:var(--text-light);font-style:italic;">📤 上传超格笔记、讲义填充</p></div></div></div>`).join('');
+}
+function tgAcc(id){ document.getElementById(id).classList.toggle('open'); }
+
+// ==================== 错题本 ====================
+function renderWB(){
+  const pf=document.getElementById('wrongFilterPhase').value,mf=document.getElementById('wrongFilterModule').value,sh=document.getElementById('wrongFilterSearch').value.toLowerCase();
+  let fl=appData.wrongBook||[]; if(pf)fl=fl.filter(w=>w.phase===pf); if(mf)fl=fl.filter(w=>w.module===mf); if(sh)fl=fl.filter(w=>w.question.toLowerCase().includes(sh));
+  document.getElementById('wrongBookList').innerHTML=fl.map(w=>{
+    const bg=w.phase==='精讲阶段'?'var(--tag-green)':w.phase==='夸夸刷阶段'?'var(--tag-blue)':'var(--tag-orange)';
+    const cl=w.phase==='精讲阶段'?'var(--tag-green-text)':w.phase==='夸夸刷阶段'?'var(--tag-blue-text)':'var(--tag-orange-text)';
+    return `<div class="wrong-card"><div class="wrong-card-header"><span class="task-tag" style="background:${bg};color:${cl};">${w.phase}</span><span class="task-tag" style="background:var(--tag-purple);color:var(--tag-purple-text);">${w.module}</span>${w.reviewCount>=3?'<span class="wrong-review-badge r3">三刷</span>':w.reviewCount>=2?'<span class="wrong-review-badge r2">二刷</span>':''}<button class="btn btn-ghost btn-xs" style="margin-left:auto;" onclick="delWrong('${w.id}')">删</button></div><div class="wrong-question">${esc(w.question)}</div><div class="wrong-detail"><strong>错误原因：</strong>${esc(w.reason)}</div><div class="wrong-detail"><strong>正确思路：</strong>${esc(w.solution)}</div><div style="margin-top:6px;"><button class="btn btn-outline btn-xs" onclick="markRev('${w.id}')">标记复习 (${w.reviewCount||1}刷)</button></div></div>`;
+  }).join('');
+}
+function openWrongModal(){ document.getElementById('wrongModal').classList.add('show'); }
+function closeWrongModal(){ document.getElementById('wrongModal').classList.remove('show'); }
+function saveWrong(){
+  const w={id:Date.now().toString(),question:document.getElementById('wrongQuestionInput').value.trim(),phase:document.getElementById('wrongPhaseInput').value,module:document.getElementById('wrongModuleInput').value,reason:document.getElementById('wrongReasonInput').value.trim(),solution:document.getElementById('wrongSolutionInput').value.trim(),reviewCount:1,date:new Date().toISOString().split('T')[0]};
+  if(!w.question) return; if(!appData.wrongBook)appData.wrongBook=[]; appData.wrongBook.unshift(w); sv(); closeWrongModal(); renderWB();
+}
+function delWrong(id){ appData.wrongBook=(appData.wrongBook||[]).filter(w=>w.id!==id); sv(); renderWB(); }
+function markRev(id){ const w=(appData.wrongBook||[]).find(w=>w.id===id); if(w){w.reviewCount=(w.reviewCount||1)+1;sv();renderWB();} }
+
+// ==================== 统计 ====================
+function upStats(){
+  let allDone=0, allTotal=0;
+  ['p1','p2','p3'].forEach(pk=>{
+    const ph=appData[pk]||{};
+    SUBJECTS.forEach(sub=>{
+      const tasks=ph[sub.key]||[];
+      allDone+=tasks.filter(t=>t.done).length;
+      allTotal+=tasks.length;
+    });
+  });
+  document.getElementById('totalProgress').textContent=(allTotal>0?Math.round((allDone/allTotal)*100):0)+'%';
+  const scores=appData.mockScores||[];
+  document.getElementById('totalAccuracy').textContent=scores.length>0?(scores.reduce((s,m)=>s+m.score,0)/scores.length).toFixed(1)+'%':'--%';
+  const ds=new Set(); appData.checkins.forEach(c=>ds.add(c.date)); appData.durations.forEach(d=>ds.add(d.date)); appData.mockScores.forEach(m=>ds.add(m.date)); appData.tasks.forEach(t=>{if(t.date)ds.add(t.date);});
+  document.getElementById('totalDays').textContent=ds.size;
+}
+
+// ==================== 饮水 ====================
+function wt(){ const t=new Date().toISOString().split('T')[0]; return (appData.waterLog&&appData.waterLog[t])||0; }
+function renderWater(){
+  const ml=wt(),pct=Math.min(100,Math.round((ml/1500)*100));
+  const ce=document.getElementById('waterCurrent'); if(ce)ce.textContent=ml+'ml';
+  const fe=document.getElementById('waterFill'); if(fe)fe.style.width=pct+'%';
+  const he=document.getElementById('waterHistory'); if(!he)return;
+  let h=''; for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); const ds=d.toISOString().split('T')[0]; const v=(appData.waterLog&&appData.waterLog[ds])||0; const p=Math.min(100,Math.round((v/1500)*100)); h+=`<div class="water-day"><div class="water-day-bar"><div class="water-day-fill" style="height:${p}%"></div></div><span>${ds.slice(5)}</span></div>`; }
+  he.innerHTML=h;
+}
+function addWater(ml){ const t=new Date().toISOString().split('T')[0]; if(!appData.waterLog)appData.waterLog={}; appData.waterLog[t]=(appData.waterLog[t]||0)+ml; sv(); renderWater(); }
+function resetWater(){ const t=new Date().toISOString().split('T')[0]; if(appData.waterLog)appData.waterLog[t]=0; sv(); renderWater(); }
+
+// ==================== 散步 ====================
+function renderWalk(){
+  const sorted=[...(appData.walkLog||[])].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15);
+  const el=document.getElementById('walkLog'); if(el)el.innerHTML=sorted.map(w=>`<div class="walk-log-item"><span>${w.date} · ${w.minutes}分钟 🚶‍♀️</span><button class="btn btn-ghost btn-xs" onclick="delWalk('${w.id}')">删</button></div>`).join('');
+}
+function addWalk(){ const m=parseInt(document.getElementById('walkMinutes').value); if(!m||m<=0)return; if(!appData.walkLog)appData.walkLog=[]; appData.walkLog.push({id:Date.now().toString(),date:new Date().toISOString().split('T')[0],minutes:m}); sv(); document.getElementById('walkMinutes').value=''; renderWalk(); }
+function delWalk(id){ appData.walkLog=(appData.walkLog||[]).filter(w=>w.id!==id); sv(); renderWalk(); }
+
+// ==================== 菜谱 ====================
+const recipes=[{day:1,dishes:[{name:'番茄炒蛋',icon:'🍅',ingredients:['番茄2个','鸡蛋3个','葱花','盐','糖'],steps:'1.番茄切块，鸡蛋打散加盐；2.热油炒蛋盛出；3.炒番茄出汁，加蛋翻炒；4.加盐、少许糖，撒葱花。',note:'番茄含番茄红素，鸡蛋优质蛋白，清淡易消化'},{name:'蒜蓉西兰花',icon:'🥦',ingredients:['西兰花1颗','大蒜4瓣','盐','橄榄油'],steps:'1.西兰花掰小朵焯水1分钟；2.蒜切末；3.热油爆香蒜末；4.加西兰花翻炒加盐。',note:'西兰花富含维C和纤维，适合甲状腺结节人群'}]},{day:2,dishes:[{name:'土豆炖牛腩',icon:'🥩',ingredients:['牛腩300g','土豆2个','胡萝卜1根','姜片','八角','生抽','盐'],steps:'1.牛腩焯水；2.热油炒姜片八角；3.加牛腩翻炒加生抽；4.加水炖1小时；5.加土豆胡萝卜炖20分钟加盐。',note:'牛肉补铁，土豆胡萝卜提供碳水与维A'},{name:'清炒油麦菜',icon:'🥬',ingredients:['油麦菜300g','蒜末','盐','食用油'],steps:'1.油麦菜洗净切段；2.热油爆香蒜末；3.大火快炒；4.加盐出锅。',note:'油麦菜富含叶酸和维K，低草酸适合肾结石人群'}]},{day:3,dishes:[{name:'宫保鸡丁',icon:'🐔',ingredients:['鸡胸肉250g','花生米','黄瓜','胡萝卜','干辣椒','酱油','醋','糖','淀粉'],steps:'1.鸡肉切丁加淀粉腌制；2.调汁；3.炒花生盛出；4.炒鸡丁加蔬菜丁；5.倒料汁加花生。',note:'鸡胸低脂高蛋白，花生含不饱和脂肪酸'},{name:'木耳炒山药',icon:'🪵',ingredients:['山药200g','木耳50g','青椒1个','盐','油'],steps:'1.木耳泡发撕小朵；2.山药去皮切片；3.焯水；4.热油翻炒加盐。',note:'山药健脾养胃，木耳清肺润肠'}]},{day:4,dishes:[{name:'红烧豆腐',icon:'🧈',ingredients:['老豆腐1块','葱姜蒜','生抽','老抽','糖','淀粉'],steps:'1.豆腐切块煎至两面金黄；2.爆香葱姜蒜；3.加生抽老抽糖水；4.放豆腐炖5分钟；5.勾芡。',note:'豆腐富含植物蛋白和大豆异黄酮，有益乳腺健康'},{name:'香菇油菜',icon:'🥬',ingredients:['油菜300g','香菇6朵','蒜末','蚝油','盐'],steps:'1.香菇切片油菜洗净；2.炒香菇至软；3.加油菜翻炒；4.加蚝油盐。',note:'油菜富含钙和维C，香菇增强免疫力'}]},{day:5,dishes:[{name:'青椒肉丝',icon:'🫑',ingredients:['猪里脊200g','青椒3个','姜丝','生抽','料酒','淀粉','盐'],steps:'1.肉切丝加料酒生抽淀粉腌制；2.青椒切丝；3.滑炒肉丝盛出；4.炒青椒加肉丝调味。',note:'青椒维C极高，猪肉提供B族维生素'},{name:'番茄菌菇汤',icon:'🍄',ingredients:['番茄2个','金针菇','平菇','鸡蛋1个','葱花','盐'],steps:'1.番茄炒出汁加水；2.放菌菇煮3分钟；3.淋蛋液；4.加盐撒葱花。',note:'菌菇低热量高纤维，番茄汤开胃'}]},{day:6,dishes:[{name:'糖醋排骨',icon:'🍖',ingredients:['排骨400g','醋','糖','生抽','料酒','姜片'],steps:'1.排骨焯水；2.热油煎微黄；3.加料酒生抽醋糖水；4.小火炖30分钟收汁。',note:'排骨富含钙质和胶原蛋白'},{name:'蒜蓉空心菜',icon:'🥬',ingredients:['空心菜300g','蒜末','盐','油'],steps:'1.空心菜洗净切段；2.热油爆香蒜末；3.大火快炒；4.加盐出锅。',note:'空心菜清热利尿，富含叶绿素'}]},{day:7,dishes:[{name:'可乐鸡翅',icon:'🍗',ingredients:['鸡翅中8个','可乐1罐','生抽','姜片','料酒'],steps:'1.鸡翅划刀焯水；2.热油煎两面金黄；3.加姜片料酒生抽；4.倒可乐；5.中火收汁。',note:'鸡翅含胶原蛋白，适量食用'},{name:'凉拌黄瓜',icon:'🥒',ingredients:['黄瓜2根','蒜末','醋','生抽','香油','盐','糖'],steps:'1.黄瓜拍碎切段；2.调汁拌匀；3.腌制10分钟。',note:'黄瓜清热解暑，低热量高水分'}]},{day:8,dishes:[{name:'回锅肉',icon:'🥓',ingredients:['五花肉250g','蒜苗','青椒','豆瓣酱','姜片','生抽'],steps:'1.五花肉煮熟切片；2.煸炒至卷曲；3.加豆瓣酱；4.加蒜苗青椒翻炒。',note:'蒜苗含大蒜素，助消化降血脂'},{name:'白灼生菜',icon:'🥬',ingredients:['生菜300g','蒜末','生抽','油'],steps:'1.水开加盐油；2.生菜焯烫30秒；3.淋生抽；4.热油浇蒜末。',note:'生菜富含叶酸，白灼保留营养'}]},{day:9,dishes:[{name:'鱼香茄子',icon:'🍆',ingredients:['茄子2个','肉末100g','蒜末','豆瓣酱','醋','糖','生抽'],steps:'1.茄子切条腌制挤水；2.炒茄子至软盛出；3.炒肉末加豆瓣酱；4.调鱼香汁混合翻炒。',note:'茄子含花青素抗氧化'},{name:'紫菜蛋花汤',icon:'🥣',ingredients:['紫菜','鸡蛋2个','葱花','盐','香油'],steps:'1.水烧开放紫菜；2.淋蛋液；3.加盐香油撒葱花。',note:'紫菜含碘注意甲状腺摄入量，可减量'}]},{day:10,dishes:[{name:'咖喱鸡肉饭',icon:'🍛',ingredients:['鸡腿肉300g','土豆','胡萝卜','洋葱','咖喱块','米饭'],steps:'1.鸡肉蔬菜切块；2.炒洋葱；3.加鸡肉炒变色；4.加土豆胡萝卜水；5.加咖喱块搅匀。',note:'咖喱含姜黄素抗炎，搭配米饭均衡'},{name:'手撕包菜',icon:'🥬',ingredients:['包菜300g','干辣椒','蒜末','醋','生抽','盐'],steps:'1.包菜手撕；2.爆香干辣椒蒜末；3.大火翻炒；4.加醋生抽盐。',note:'包菜富含维U护胃'}]},{day:11,dishes:[{name:'麻婆豆腐',icon:'🧈',ingredients:['嫩豆腐1块','肉末100g','豆瓣酱','花椒粉','蒜末','淀粉'],steps:'1.豆腐切块焯水；2.炒肉末加豆瓣酱；3.加水放豆腐；4.勾芡撒花椒粉。',note:'豆腐优质蛋白，微辣开胃'},{name:'清炒豆苗',icon:'🌱',ingredients:['豆苗300g','蒜末','盐','油'],steps:'1.豆苗洗净；2.热油爆香蒜末；3.大火快炒；4.加盐出锅。',note:'豆苗富含维C和叶绿素'}]},{day:12,dishes:[{name:'红烧鸡块',icon:'🍗',ingredients:['鸡块400g','土豆','香菇','姜片','生抽','老抽','糖'],steps:'1.鸡块焯水；2.炒糖色加鸡块；3.加生抽老抽姜片水；4.加土豆香菇炖20分钟。',note:'鸡肉低脂，香菇提鲜'},{name:'清炒茼蒿',icon:'🥬',ingredients:['茼蒿300g','蒜末','盐','油'],steps:'1.茼蒿洗净切段；2.热油爆香蒜末；3.快炒加盐。',note:'茼蒿安神助眠，富含维A'}]},{day:13,dishes:[{name:'孜然牛肉',icon:'🥩',ingredients:['牛肉250g','洋葱','青椒','孜然粉','辣椒粉','生抽','料酒'],steps:'1.牛肉切片加料酒生抽腌制；2.爆炒牛肉；3.加洋葱青椒；4.撒孜然辣椒粉。',note:'牛肉补铁补血，孜然助消化'},{name:'醋溜白菜',icon:'🥬',ingredients:['大白菜300g','干辣椒','醋','生抽','盐','糖'],steps:'1.白菜切片；2.爆香干辣椒；3.放白菜翻炒；4.加醋生抽盐糖。',note:'白菜清热利尿，低草酸'}]},{day:14,dishes:[{name:'香菇滑鸡',icon:'🍗',ingredients:['鸡腿肉300g','香菇8朵','姜片','生抽','蚝油','淀粉'],steps:'1.鸡肉切块加淀粉腌制；2.香菇泡发切片；3.炒鸡肉至变色；4.加香菇姜片翻炒；5.加生抽蚝油焖5分钟。',note:'香菇增强免疫，鸡肉易消化'},{name:'番茄菜花',icon:'🥦',ingredients:['菜花300g','番茄2个','蒜末','盐','番茄酱'],steps:'1.菜花焯水；2.番茄炒出汁；3.加菜花翻炒；4.加番茄酱盐。',note:'菜花富含维C和抗癌物质'}]},{day:15,dishes:[{name:'京酱肉丝',icon:'🥩',ingredients:['猪里脊250g','豆腐皮','大葱','甜面酱','生抽','料酒','糖'],steps:'1.肉切丝加料酒生抽腌制；2.豆腐皮切方块；3.滑炒肉丝；4.加甜面酱糖翻炒。',note:'豆制品丰富，搭配合理'},{name:'菠菜鸡蛋汤',icon:'🥣',ingredients:['菠菜200g','鸡蛋2个','盐','香油'],steps:'1.菠菜焯水去草酸；2.水开放菠菜；3.淋蛋液；4.加盐香油。',note:'菠菜焯水减草酸，适合肾结石人群'}]},{day:16,dishes:[{name:'土豆烧豆角',icon:'🥔',ingredients:['土豆2个','豆角200g','蒜末','生抽','盐'],steps:'1.土豆切块豆角切段；2.炒土豆微黄；3.加豆角翻炒；4.加生抽水焖10分钟。',note:'土豆富含钾，豆角含植物蛋白'},{name:'凉拌木耳',icon:'🪵',ingredients:['木耳50g','黄瓜','蒜末','醋','生抽','香油'],steps:'1.木耳泡发焯水；2.黄瓜切丝；3.调汁拌匀。',note:'木耳清肺润肠，凉拌开胃'}]},{day:17,dishes:[{name:'照烧鸡腿',icon:'🍗',ingredients:['鸡腿2个','生抽','蜂蜜','料酒','姜片'],steps:'1.鸡腿去骨划刀；2.调照烧汁；3.煎鸡腿皮面金黄；4.翻面加照烧汁收汁。',note:'蜂蜜天然甜味剂，鸡腿肉嫩滑'},{name:'清炒芦笋',icon:'🌱',ingredients:['芦笋250g','蒜末','盐','橄榄油'],steps:'1.芦笋去老根焯水；2.热油爆香蒜末；3.翻炒加盐。',note:'芦笋富含叶酸和抗氧化物质'}]},{day:18,dishes:[{name:'木须肉',icon:'🥩',ingredients:['猪里脊150g','木耳','黄花菜','鸡蛋2个','黄瓜','生抽','盐'],steps:'1.肉切片腌制；2.鸡蛋炒散盛出；3.炒肉片；4.加木耳黄花菜黄瓜；5.加鸡蛋翻炒。',note:'食材丰富营养全面'},{name:'清炒南瓜',icon:'🎃',ingredients:['南瓜300g','蒜末','盐','油'],steps:'1.南瓜去皮切片；2.热油爆香蒜末；3.翻炒加少许水焖软；4.加盐。',note:'南瓜富含β胡萝卜素护眼，适合高度近视人群'}]},{day:19,dishes:[{name:'葱爆羊肉',icon:'🥩',ingredients:['羊肉片250g','大葱2根','姜丝','生抽','料酒','孜然粉'],steps:'1.羊肉加料酒腌制；2.大葱切斜段；3.爆炒羊肉；4.加葱姜翻炒；5.加生抽孜然。',note:'羊肉温补，大葱杀菌'},{name:'蚝油生菜',icon:'🥬',ingredients:['生菜300g','蚝油','蒜末','油'],steps:'1.生菜焯水摆盘；2.热油爆香蒜末加蚝油水；3.浇在生菜上。',note:'简单快手，保留蔬菜营养'}]},{day:20,dishes:[{name:'黄焖鸡',icon:'🍗',ingredients:['鸡腿肉400g','土豆','香菇','青椒','姜片','生抽','老抽','黄豆酱'],steps:'1.鸡肉焯水；2.炒糖色加鸡肉；3.加黄豆酱生抽老抽；4.加土豆香菇水焖20分钟；5.加青椒收汁。',note:'汤汁浓郁拌饭绝佳'},{name:'蒜蓉娃娃菜',icon:'🥬',ingredients:['娃娃菜2棵','蒜末','生抽','油'],steps:'1.娃娃菜对半切；2.蒸8分钟；3.热油炒蒜末加生抽；4.浇在菜上。',note:'蒸制保留营养，娃娃菜清甜'}]},{day:21,dishes:[{name:'干煸豆角',icon:'🫘',ingredients:['豆角300g','肉末100g','干辣椒','花椒','蒜末','生抽','盐'],steps:'1.豆角焯水沥干；2.煸炒至虎皮状；3.炒肉末加干辣椒花椒；4.混合加调料。',note:'豆角含丰富植物蛋白和纤维'},{name:'番茄蛋花汤',icon:'🍅',ingredients:['番茄2个','鸡蛋2个','葱花','盐','香油'],steps:'1.番茄炒出汁加水；2.煮沸淋蛋液；3.加盐香油葱花。',note:'经典家常汤品'}]},{day:22,dishes:[{name:'红烧肉',icon:'🥓',ingredients:['五花肉400g','冰糖','生抽','老抽','八角','桂皮','姜片'],steps:'1.五花肉切块焯水；2.炒糖色；3.加肉翻炒；4.加调料水炖1小时收汁。',note:'偶尔食用补充能量，注意适量'},{name:'白灼芥蓝',icon:'🥬',ingredients:['芥蓝300g','蒜末','生抽','油'],steps:'1.芥蓝焯水；2.淋生抽；3.热油浇蒜末。',note:'芥蓝富含钙和维K'}]},{day:23,dishes:[{name:'蒜香排骨',icon:'🍖',ingredients:['排骨400g','大蒜1头','生抽','料酒','蜂蜜','盐'],steps:'1.排骨加蒜末料酒生抽腌30分钟；2.烤箱200°C烤25分钟或油煎；3.刷蜂蜜再烤5分钟。',note:'蒜香浓郁，排骨补钙'},{name:'清炒丝瓜',icon:'🥒',ingredients:['丝瓜2根','蒜末','盐','油'],steps:'1.丝瓜去皮切滚刀块；2.热油爆香蒜末；3.翻炒加盐，出水变软即可。',note:'丝瓜清热化痰，口感清甜'}]},{day:24,dishes:[{name:'洋葱炒肉',icon:'🧅',ingredients:['猪肉片200g','洋葱1个','青椒1个','生抽','盐','料酒'],steps:'1.肉片加料酒生抽腌制；2.洋葱青椒切片；3.炒肉片盛出；4.炒洋葱青椒；5.加肉片调味。',note:'洋葱含槲皮素抗氧化，保护心血管'},{name:'凉拌豆腐',icon:'🧈',ingredients:['内酯豆腐1盒','皮蛋1个','葱花','生抽','醋','香油'],steps:'1.豆腐扣入盘中；2.皮蛋切碎撒上；3.调汁淋上撒葱花。',note:'清爽凉菜，适合夏天'}]},{day:25,dishes:[{name:'大盘鸡',icon:'🍗',ingredients:['鸡块400g','土豆','青椒','宽面','豆瓣酱','花椒','八角','生抽'],steps:'1.鸡块焯水；2.炒豆瓣酱花椒八角；3.加鸡块翻炒；4.加水土豆炖20分钟；5.加青椒配宽面。',note:'西北风味，土豆鸡肉营养均衡'},{name:'清炒荷兰豆',icon:'🫛',ingredients:['荷兰豆250g','蒜末','盐','油'],steps:'1.荷兰豆去筋焯水；2.热油爆香蒜末；3.快炒加盐。',note:'荷兰豆富含维C和膳食纤维'}]},{day:26,dishes:[{name:'酱爆鸡丁',icon:'🐔',ingredients:['鸡胸肉250g','黄瓜','胡萝卜','甜面酱','生抽','料酒','淀粉'],steps:'1.鸡丁加淀粉腌制；2.蔬菜切丁；3.滑炒鸡丁盛出；4.炒甜面酱；5.放所有食材翻炒。',note:'鸡胸低脂高蛋白'},{name:'上汤娃娃菜',icon:'🥬',ingredients:['娃娃菜2棵','皮蛋1个','蒜末','高汤','盐'],steps:'1.娃娃菜焯水；2.热油炒蒜末皮蛋碎；3.加高汤煮沸；4.浇在娃娃菜上。',note:'汤鲜味美，娃娃菜清甜软嫩'}]},{day:27,dishes:[{name:'可乐排骨',icon:'🍖',ingredients:['排骨400g','可乐1罐','生抽','姜片','料酒','八角'],steps:'1.排骨焯水；2.煎微黄；3.加姜片八角料酒生抽；4.倒可乐；5.炖40分钟收汁。',note:'排骨软烂入味，适量食用'},{name:'炒合菜',icon:'🥗',ingredients:['豆芽','粉丝','韭菜','鸡蛋2个','生抽','盐'],steps:'1.粉丝泡软鸡蛋炒散；2.炒豆芽；3.加粉丝韭菜鸡蛋；4.加生抽盐翻炒。',note:'食材多样，营养互补'}]},{day:28,dishes:[{name:'椒盐鸡翅',icon:'🍗',ingredients:['鸡翅中8个','椒盐','蒜末','料酒','淀粉'],steps:'1.鸡翅划刀加料酒腌制；2.裹薄淀粉；3.烤箱200°C烤20分钟或油炸；4.撒椒盐蒜末。',note:'外酥里嫩，鸡翅含胶原蛋白'},{name:'清炒芥菜',icon:'🥬',ingredients:['芥菜300g','蒜末','盐','油'],steps:'1.芥菜洗净切段焯水；2.热油爆香蒜末；3.翻炒加盐。',note:'芥菜富含维C和矿物质'}]},{day:29,dishes:[{name:'锅包肉',icon:'🥩',ingredients:['猪里脊250g','胡萝卜','葱姜丝','淀粉','醋','糖','生抽'],steps:'1.肉切片加淀粉糊；2.油炸至金黄；3.调糖醋汁；4.热锅炒汁；5.放肉片和蔬菜丝翻匀。',note:'东北名菜，酸甜酥脆'},{name:'冬瓜汤',icon:'🍈',ingredients:['冬瓜300g','葱花','盐','香油'],steps:'1.冬瓜去皮切片；2.水开放冬瓜；3.煮至透明加盐；4.撒葱花滴香油。',note:'冬瓜利尿消肿，低热量'}]},{day:30,dishes:[{name:'番茄牛腩',icon:'🥩',ingredients:['牛腩300g','番茄3个','土豆1个','姜片','番茄酱','盐'],steps:'1.牛腩焯水；2.番茄炒出汁；3.加牛腩姜片水炖1小时；4.加土豆番茄酱炖20分钟；5.加盐。',note:'番茄牛腩酸甜浓郁，补铁补血'},{name:'清炒四季豆',icon:'🫘',ingredients:['四季豆250g','蒜末','盐','油'],steps:'1.四季豆去筋焯水至熟；2.热油爆香蒜末；3.翻炒加盐。',note:'四季豆需充分煮熟，含丰富纤维'}]}];
+
+function getTodayRecipe(){
+  const today=new Date(); const doy=Math.floor((today-new Date(today.getFullYear(),0,0))/86400000);
+  return recipes[(doy-1)%30];
+}
+function renderRecipe(){
+  const r=getTodayRecipe();
+  document.getElementById('recipeDate').textContent='📅 '+new Date().toISOString().split('T')[0]+' · 第'+r.day+'天';
+  document.getElementById('recipeCards').innerHTML=r.dishes.map((d,i)=>`<div class="recipe-card" id="rec${i}" onclick="tgRecipe(${i})"><div class="recipe-card-header"><span>${d.icon} ${d.name}</span><span style="font-size:11px;color:var(--text-light);">展开▾</span></div><div class="recipe-detail"><div class="recipe-section"><strong>🥬 食材：</strong><br>${d.ingredients.join('、')}</div><div class="recipe-section"><strong>👩‍🍳 步骤：</strong><br>${d.steps}</div><div class="recipe-section"><strong>💚 备注：</strong><br>${d.note}</div></div></div>`).join('');
+}
+function tgRecipe(i){ document.getElementById('rec'+i).classList.toggle('expanded'); }
+function copyShoppingList(){
+  const r=getTodayRecipe();
+  const all=r.dishes.flatMap(d=>d.ingredients);
+  const txt='🛒 买菜清单 ('+new Date().toISOString().split('T')[0]+')\n\n'+r.dishes.map(d=>'📌 '+d.name+'\n   '+d.ingredients.join('、')).join('\n\n')+'\n\n📋 汇总：\n'+[...new Set(all)].join('\n');
+  navigator.clipboard.writeText(txt).then(()=>toast('清单已复制 ✓'));
+}
+
+// ==================== 健康备忘 ====================
+const hms=[{t:'👁️ 护眼提醒',d:'每45分钟远眺窗外5分钟；每日散步20分钟以上；补充叶黄素和维A',w:false},{t:'🩺 体检复查倒计时',d:'乳腺彩超：每年1次 · 甲状腺彩超：每6-12月 · 肾功能：每6月 · 眼底检查：每6-12月',w:true},{t:'🚫 饮食禁忌',d:'禁海鲜（甲状腺结节）· 减高碘食物 · 低草酸（肾结石）· 少辛辣（乳腺增生）· 避免高糖高油',w:true},{t:'💧 饮水建议',d:'每日1500ml以上，优先纯净水或白开水，少量多次',w:false},{t:'🧘 身体活动',d:'每日散步30分钟以上，避免久坐，保持良好体态',w:false}];
+function renderHMs(){
+  const h=hms.map(m=>`<div class="health-memo-item ${m.w?'warn':''}"><div class="memo-title">${m.t}</div><div class="memo-desc">${m.d}</div></div>`).join('');
+  document.getElementById('healthMemos').innerHTML=h;
+}
+
+// ==================== 健康页面 ====================
+function renderHealth(){ renderWater(); renderWalk(); renderRecipe(); renderHMs(); }
+
+// ==================== 工具 ====================
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+// ==================== 弹窗关闭（点击遮罩） ====================
+['dateModal','durationModal','wrongModal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){ if(e.target===this) this.classList.remove('show'); });
+});
+
+// ==================== 初始化 ====================
+function init(){
+  updateCD(); renderTasks(); renderDur(); renderReview(); renderMock(); renderCheckins(); renderPlan(); renderXC(); renderSL(); renderWB(); renderWater(); renderWalk(); renderRecipe(); renderHMs(); upStats();
+}
+init();
+setInterval(updateCD, 60000);
+
+// 窗口尺寸变化重绘图表
+window.addEventListener('resize',()=>{ drawDurChart(); drawMockChart(); });
+</script>
+
+</body>
+</html>
