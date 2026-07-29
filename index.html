@@ -1041,11 +1041,115 @@ function migratePhaseData(phaseData) {
   return phaseData;
 }
 function sv() { localStorage.setItem(SK, JSON.stringify(appData)); }
+
+// ==================== 夸夸刷阶段默认课表 ====================
+// 仅在用户从未使用过夸夸刷阶段时自动填充一次，保证已有进度不丢失
+const KUAKUA_DEFAULT = [
+  // 资料分析
+  {sub:'ziliao',text:'【资料】基期量'},
+  {sub:'ziliao',text:'【资料】现期量'},
+  {sub:'ziliao',text:'【资料】增长量'},
+  {sub:'ziliao',text:'【资料】一般增长率'},
+  {sub:'ziliao',text:'【资料】年均增长率、间隔增长率'},
+  {sub:'ziliao',text:'【资料】乘积增长率、混合增长率'},
+  {sub:'ziliao',text:'【资料】比重'},
+  {sub:'ziliao',text:'【资料】平均数'},
+  {sub:'ziliao',text:'【资料】倍数'},
+  {sub:'ziliao',text:'【资料】切入点与易错点'},
+  // 申论
+  {sub:'shenlun',text:'【申论】归纳概括专项强化1'},
+  {sub:'shenlun',text:'【申论】归纳概括专项强化2'},
+  {sub:'shenlun',text:'【申论】归纳概括专项强化3'},
+  {sub:'shenlun',text:'【申论】归纳概括专项强化4'},
+  {sub:'shenlun',text:'【申论】归纳概括专项强化5'},
+  {sub:'shenlun',text:'【申论】提出对策专项强化1'},
+  {sub:'shenlun',text:'【申论】提出对策专项强化2'},
+  {sub:'shenlun',text:'【申论】提出对策专项强化3'},
+  {sub:'shenlun',text:'【申论】综合分析专项强化1'},
+  {sub:'shenlun',text:'【申论】综合分析专项强化2'},
+  {sub:'shenlun',text:'【申论】综合分析专项强化3'},
+  {sub:'shenlun',text:'【申论】应用文专项强化1'},
+  {sub:'shenlun',text:'【申论】应用文专项强化2'},
+  {sub:'shenlun',text:'【申论】应用文专项强化3'},
+  {sub:'shenlun',text:'【申论】应用文专项强化4'},
+  {sub:'shenlun',text:'【申论】应用文专项强化5'},
+  {sub:'shenlun',text:'【申论】大作文专项强化1'},
+  {sub:'shenlun',text:'【申论】大作文专项强化2'},
+  {sub:'shenlun',text:'【申论】大作文专项强化3'},
+  {sub:'shenlun',text:'【申论】大作文专项强化4'},
+  {sub:'shenlun',text:'【申论】大作文专项强化5'},
+  {sub:'shenlun',text:'【申论】大作文专项强化6'},
+  {sub:'shenlun',text:'【申论】大作文专项强化7'},
+  {sub:'shenlun',text:'【申论】大作文专项强化8'},
+  {sub:'shenlun',text:'【申论】大作文专项强化9'},
+  // 图形推理
+  {sub:'tuxing',text:'【图推】黑白块专项+模型1'},
+  {sub:'tuxing',text:'【图推】黑白块专项+模型2'},
+  {sub:'tuxing',text:'【图推】黑白块专项+模型3'},
+  {sub:'tuxing',text:'【图推】黑白块专项+模型串讲（梳理课）'},
+  {sub:'tuxing',text:'【图推】"3+3"专项刷题1'},
+  {sub:'tuxing',text:'【图推】"3+3"专项刷题2'},
+  {sub:'tuxing',text:'【图推】空间专项1'},
+  {sub:'tuxing',text:'【图推】空间专项2'},
+  // 逻辑判断
+  {sub:'luoji',text:'【判断】专题训练一：形式逻辑1'},
+  {sub:'luoji',text:'【判断】专题训练二：形式逻辑2'},
+  {sub:'luoji',text:'【判断】专题训练三：形式逻辑3'},
+  {sub:'luoji',text:'【判断】专题训练四：论证逻辑1'},
+  {sub:'luoji',text:'【判断】专题训练五：论证逻辑2'},
+  {sub:'luoji',text:'【判断】专题训练六：论证逻辑3'},
+  {sub:'luoji',text:'【判断】专题训练七：论证逻辑4'},
+  {sub:'luoji',text:'【判断】专题训练八：定义判断1'},
+  {sub:'luoji',text:'【判断】专题训练九：定义判断2+类比推理1'},
+  {sub:'luoji',text:'【判断】专题训练十：类比推理2'},
+  {sub:'luoji',text:'【判断】专题训练十一：三段论'},
+  {sub:'luoji',text:'【判断】专题训练十二：一拖五'},
+  // 言语理解
+  {sub:'yuyan',text:'【言语】中心理解1'},
+  {sub:'yuyan',text:'【言语】中心理解2'},
+  {sub:'yuyan',text:'【言语】中心理解3'},
+  {sub:'yuyan',text:'【言语】中心理解4'},
+  {sub:'yuyan',text:'【言语】中心理解5'},
+  {sub:'yuyan',text:'【言语】标题添加+细节判断'},
+  {sub:'yuyan',text:'【言语】语句理解+语句填空'},
+  {sub:'yuyan',text:'【言语】语句排序+接语选择'},
+  {sub:'yuyan',text:'【言语】小题型综合突破'},
+  {sub:'yuyan',text:'【言语】逻辑填空1'},
+  {sub:'yuyan',text:'【言语】逻辑填空2'},
+  {sub:'yuyan',text:'【言语】逻辑填空3'},
+  {sub:'yuyan',text:'【言语】逻辑填空4'},
+  {sub:'yuyan',text:'【言语】逻辑填空5'},
+  {sub:'yuyan',text:'【言语】篇章阅读'},
+  // 数量关系
+  {sub:'shuliang',text:'【数量】和差倍比'},
+  {sub:'shuliang',text:'【数量】工程问题'},
+  {sub:'shuliang',text:'【数量】几何问题'},
+  {sub:'shuliang',text:'【数量】等差数列、经济利润'},
+  {sub:'shuliang',text:'【数量】最值问题、容斥问题'},
+  {sub:'shuliang',text:'【数量】周期问题、年龄问题'},
+  {sub:'shuliang',text:'【数量】行程问题'},
+  {sub:'shuliang',text:'【数量】排列组合、概率问题'},
+  {sub:'shuliang',text:'【数量】溶液问题'},
+  {sub:'shuliang',text:'【数量】植树问题、方阵问题、趣味杂题'}
+];
+function seedKuaKuaShua() {
+  if (!appData.p2) appData.p2 = buildEmptySubjects();
+  const total = SUBJECTS.reduce((sum, s) => sum + ((appData.p2[s.key] && appData.p2[s.key].length) || 0), 0);
+  // 仅当夸夸刷阶段完全没有任何任务时才填充默认课表
+  if (total > 0) return;
+  KUAKUA_DEFAULT.forEach((item, idx) => {
+    if (!appData.p2[item.sub]) appData.p2[item.sub] = [];
+    appData.p2[item.sub].push({ id: 'kk' + idx, text: item.text, done: false });
+  });
+}
+
 let appData = ld();
 // 启动时迁移旧数据
 appData.p1 = migratePhaseData(appData.p1 || []);
 appData.p2 = migratePhaseData(appData.p2 || []);
 appData.p3 = migratePhaseData(appData.p3 || []);
+// 填充夸夸刷默认课表（不覆盖已有进度）
+seedKuaKuaShua();
 sv();
 
 // ==================== Toast ====================
