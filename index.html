@@ -55,7 +55,7 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
+html { font-size: 16px; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   background: #FAFAF8;
@@ -823,13 +823,13 @@ body {
         <button class="btn btn-primary btn-sm" onclick="openWrongModal()">+ 录入</button>
       </div>
       <div class="wrong-filter-row">
-        <select id="wrongFilterPhase" onchange="renderWrongBook()" style="flex:1;min-width:80px;">
+        <select id="wrongFilterPhase" onchange="renderWB()" style="flex:1;min-width:80px;">
           <option value="">全部阶段</option>
           <option value="精讲阶段">精讲</option>
           <option value="夸夸刷阶段">夸夸刷</option>
           <option value="超大杯阶段">超大杯</option>
         </select>
-        <select id="wrongFilterModule" onchange="renderWrongBook()" style="flex:1;min-width:80px;">
+        <select id="wrongFilterModule" onchange="renderWB()" style="flex:1;min-width:80px;">
           <option value="">全部模块</option>
           <option value="言语理解">言语理解</option>
           <option value="图形推理">图形推理</option>
@@ -842,7 +842,7 @@ body {
           <option value="申论">申论</option>
         </select>
       </div>
-      <input type="text" id="wrongFilterSearch" placeholder="🔍 搜索题目..." oninput="renderWrongBook()" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;outline:none;margin-bottom:10px;">
+      <input type="text" id="wrongFilterSearch" placeholder="🔍 搜索题目..." oninput="renderWB()" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;outline:none;margin-bottom:10px;">
       <div id="wrongBookList"></div>
     </div>
   </div>
