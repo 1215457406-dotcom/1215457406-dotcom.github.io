@@ -1195,12 +1195,15 @@ const JINGJIANG_DEFAULT = [
 ];
 function seedJingJiang() {
   if (!appData.p1) appData.p1 = buildEmptySubjects();
-  const total = SUBJECTS.reduce((sum, s) => sum + ((appData.p1[s.key] && appData.p1[s.key].length) || 0), 0);
-  // 仅当精讲阶段完全没有任何任务时才填充默认课表
-  if (total > 0) return;
+  // 逐科目填充：已有任务按文本内容去重追加，不覆盖已有进度
   JINGJIANG_DEFAULT.forEach((item, idx) => {
     if (!appData.p1[item.sub]) appData.p1[item.sub] = [];
-    appData.p1[item.sub].push({ id: 'jj' + idx, text: item.text, done: false });
+    const existing = appData.p1[item.sub];
+    // 按文本内容去重：如果已存在相同文本的任务则跳过
+    const alreadyExists = existing.some(t => t.text === item.text);
+    if (!alreadyExists) {
+      existing.push({ id: 'jj' + idx, text: item.text, done: false });
+    }
   });
 }
 
@@ -1296,12 +1299,15 @@ const KUAKUA_DEFAULT = [
 ];
 function seedKuaKuaShua() {
   if (!appData.p2) appData.p2 = buildEmptySubjects();
-  const total = SUBJECTS.reduce((sum, s) => sum + ((appData.p2[s.key] && appData.p2[s.key].length) || 0), 0);
-  // 仅当夸夸刷阶段完全没有任何任务时才填充默认课表
-  if (total > 0) return;
+  // 逐科目填充：已有任务按文本内容去重追加，不覆盖已有进度
   KUAKUA_DEFAULT.forEach((item, idx) => {
     if (!appData.p2[item.sub]) appData.p2[item.sub] = [];
-    appData.p2[item.sub].push({ id: 'kk' + idx, text: item.text, done: false });
+    const existing = appData.p2[item.sub];
+    // 按文本内容去重：如果已存在相同文本的任务则跳过
+    const alreadyExists = existing.some(t => t.text === item.text);
+    if (!alreadyExists) {
+      existing.push({ id: 'kk' + idx, text: item.text, done: false });
+    }
   });
 }
 
