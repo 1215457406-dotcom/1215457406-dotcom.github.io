@@ -898,6 +898,17 @@ body {
       <div class="card-header"><div class="card-title"><span class="icon">📋</span> 健康备忘录</div></div>
       <div id="healthMemos"></div>
     </div>
+
+    <!-- 数据管理 -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="icon">💾</span> 数据备份与恢复</div></div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;line-height:1.6;">导出当前全部数据为JSON文件，或导入备份文件恢复进度。建议定期导出备份，防止数据丢失。</p>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-primary btn-sm" onclick="exportBackup()" style="flex:1;">📤 导出全部数据备份</button>
+        <button class="btn btn-outline btn-sm" onclick="triggerImport()" style="flex:1;">📥 导入备份文件</button>
+      </div>
+      <input type="file" id="backupFileInput" accept=".json" style="display:none;" onchange="handleImportFile(event)">
+    </div>
   </div>
 </div>
 
@@ -993,6 +1004,30 @@ body {
   </div>
 </div>
 
+<!-- ===== 弹窗：导入确认 ===== -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <div class="modal-title">📥 导入备份确认</div>
+    <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:16px;">请选择导入模式：</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <button class="btn btn-primary btn-block" onclick="confirmImport('overwrite')" style="text-align:left;padding:14px;">
+        <strong>① 覆盖还原</strong><br>
+        <span style="font-size:12px;color:var(--olive-light);">完全还原备份，替换本机全部数据</span>
+      </button>
+      <button class="btn btn-outline btn-block" onclick="confirmImport('merge')" style="text-align:left;padding:14px;">
+        <strong>② 合并追加</strong><br>
+        <span style="font-size:12px;color:var(--text-light);">保留本机现有记录，追加备份内新数据</span>
+      </button>
+    </div>
+    <div style="background:#FFF8E1;border-radius:8px;padding:10px 14px;font-size:12px;color:#E65100;line-height:1.5;">
+      ⚠️ 操作不可撤销！覆盖还原会清除当前所有进度；合并追加不会删除已有记录但可能产生重复项。请确认后再操作。
+    </div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button class="btn btn-ghost" onclick="closeImportModal()">取消</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ==================== 数据 ====================
 // ==================== 9科目定义 ====================
@@ -1041,6 +1076,133 @@ function migratePhaseData(phaseData) {
   return phaseData;
 }
 function sv() { localStorage.setItem(SK, JSON.stringify(appData)); }
+
+// ==================== 精讲阶段默认课表 ====================
+// 仅在用户从未使用过精讲阶段时自动填充一次，保证已有进度不丢失
+const JINGJIANG_DEFAULT = [
+  // 资料分析
+  {sub:'ziliao',text:'【资料】速算技巧（加、减、乘）'},
+  {sub:'ziliao',text:'【资料】速算技巧（除）'},
+  {sub:'ziliao',text:'【资料】基期量'},
+  {sub:'ziliao',text:'【资料】现期量'},
+  {sub:'ziliao',text:'【资料】增长量'},
+  {sub:'ziliao',text:'【资料】一般增长率'},
+  {sub:'ziliao',text:'【资料】间隔增长率'},
+  {sub:'ziliao',text:'【资料】年均增长率、乘积增长率'},
+  {sub:'ziliao',text:'【资料】混合增长率'},
+  {sub:'ziliao',text:'【资料】比重'},
+  {sub:'ziliao',text:'【资料】平均数'},
+  {sub:'ziliao',text:'【资料】倍数'},
+  {sub:'ziliao',text:'【资料】A与非A、综合分析'},
+  // 图形推理
+  {sub:'tuxing',text:'【图推】平面-位置规律+相邻比较'},
+  {sub:'tuxing',text:'【图推】平面-样式规律+标记'},
+  {sub:'tuxing',text:'【图推】平面-属性规律+数量规律（面）'},
+  {sub:'tuxing',text:'【图推】平面-数量规律（笔画、线、点）'},
+  {sub:'tuxing',text:'【图推】平面-数量规律（元素、直角）+图形关系'},
+  {sub:'tuxing',text:'【图推】平面思维导图串讲（梳理课）'},
+  {sub:'tuxing',text:'【图推】空间-六面体+四面体'},
+  {sub:'tuxing',text:'【图推】空间-三视图+截面'},
+  {sub:'tuxing',text:'【图推】空间-立体拼合、平面拼合、不规则六面体'},
+  // 逻辑判断
+  {sub:'luoji',text:'【判断】形式逻辑1'},
+  {sub:'luoji',text:'【判断】形式逻辑2'},
+  {sub:'luoji',text:'【判断】形式逻辑3'},
+  {sub:'luoji',text:'【判断】形式逻辑4'},
+  {sub:'luoji',text:'【判断】论证逻辑1'},
+  {sub:'luoji',text:'【判断】论证逻辑2'},
+  {sub:'luoji',text:'【判断】论证逻辑3'},
+  {sub:'luoji',text:'【判断】论证逻辑4'},
+  {sub:'luoji',text:'【判断】论证逻辑5'},
+  {sub:'luoji',text:'【判断】论证逻辑6'},
+  {sub:'luoji',text:'【判断】类比推理1'},
+  {sub:'luoji',text:'【判断】类比推理2'},
+  {sub:'luoji',text:'【判断】类比推理3'},
+  {sub:'luoji',text:'【判断】定义判断1'},
+  {sub:'luoji',text:'【判断】定义判断2'},
+  {sub:'luoji',text:'【判断】三段论'},
+  {sub:'luoji',text:'【判断】一拖五'},
+  // 言语理解
+  {sub:'yuyan',text:'【言语】片段阅读1-命题人思维与宏观把握+行文脉络'},
+  {sub:'yuyan',text:'【言语】片段阅读2-七大核心观点与七大文段类型1'},
+  {sub:'yuyan',text:'【言语】片段阅读3-七大核心观点与七大文段类型2'},
+  {sub:'yuyan',text:'【言语】片段阅读4-七大核心观点与七大文段类型3'},
+  {sub:'yuyan',text:'【言语】片段阅读5-七大核心观点与七大文段类型4'},
+  {sub:'yuyan',text:'【言语】片段阅读6-专项练习【中心理解题】'},
+  {sub:'yuyan',text:'【言语】片段阅读7-标题添加题+细节判断题'},
+  {sub:'yuyan',text:'【言语】片段阅读8-词句理解题'},
+  {sub:'yuyan',text:'【言语】语句表达1-语句填空题'},
+  {sub:'yuyan',text:'【言语】语句表达2-语句排序题+接语选择题'},
+  {sub:'yuyan',text:'【言语】语句表达3-专项练习【小题型】'},
+  {sub:'yuyan',text:'【言语】逻辑填空1-从空入手看搭配+文段脉络找逻辑1'},
+  {sub:'yuyan',text:'【言语】逻辑填空2-文段脉络找逻辑2'},
+  {sub:'yuyan',text:'【言语】逻辑填空3-对比选项做辨析'},
+  {sub:'yuyan',text:'【言语】逻辑填空4-专项练习【逻辑填空】'},
+  {sub:'yuyan',text:'【言语】篇章阅读'},
+  // 申论
+  {sub:'shenlun',text:'【申论】班会一：学习规划-高效备考'},
+  {sub:'shenlun',text:'【申论】认知申论+材料阅读点拨'},
+  {sub:'shenlun',text:'【申论】归纳概括1'},
+  {sub:'shenlun',text:'【申论】归纳概括2'},
+  {sub:'shenlun',text:'【申论】归纳概括3'},
+  {sub:'shenlun',text:'【申论】归纳概括4'},
+  {sub:'shenlun',text:'【申论】归纳概括5'},
+  {sub:'shenlun',text:'【申论】提出对策1'},
+  {sub:'shenlun',text:'【申论】提出对策2'},
+  {sub:'shenlun',text:'【申论】提出对策3'},
+  {sub:'shenlun',text:'【申论】综合分析1'},
+  {sub:'shenlun',text:'【申论】综合分析2'},
+  {sub:'shenlun',text:'【申论】综合分析3'},
+  {sub:'shenlun',text:'【申论】应用文1'},
+  {sub:'shenlun',text:'【申论】应用文2'},
+  {sub:'shenlun',text:'【申论】应用文3'},
+  {sub:'shenlun',text:'【申论】应用文4'},
+  {sub:'shenlun',text:'【申论】应用文5'},
+  {sub:'shenlun',text:'【申论】大作文1'},
+  {sub:'shenlun',text:'【申论】大作文2'},
+  {sub:'shenlun',text:'【申论】大作文3'},
+  {sub:'shenlun',text:'【申论】大作文4'},
+  // 数量关系
+  {sub:'shuliang',text:'【数量】倍数特性'},
+  {sub:'shuliang',text:'【数量】方程问题'},
+  {sub:'shuliang',text:'【数量】等差数列'},
+  {sub:'shuliang',text:'【数量】周期问题'},
+  {sub:'shuliang',text:'【数量】工程问题'},
+  {sub:'shuliang',text:'【数量】几何问题'},
+  {sub:'shuliang',text:'【数量】容斥原理'},
+  {sub:'shuliang',text:'【数量】最值问题'},
+  {sub:'shuliang',text:'【数量】年龄问题'},
+  {sub:'shuliang',text:'【数量】溶液问题'},
+  {sub:'shuliang',text:'【数量】植树和方阵问题'},
+  {sub:'shuliang',text:'【数量】经济利润'},
+  {sub:'shuliang',text:'【数量】行程问题'},
+  {sub:'shuliang',text:'【数量】排列组合'},
+  {sub:'shuliang',text:'【数量】概率问题'},
+  // 常识判断
+  {sub:'changshi',text:'【常识判断】文史常识1'},
+  {sub:'changshi',text:'【常识判断】文史常识2'},
+  {sub:'changshi',text:'【常识判断】文史常识3'},
+  {sub:'changshi',text:'【常识判断】文史常识4'},
+  {sub:'changshi',text:'【常识判断】文史常识5'},
+  // 政治理论
+  {sub:'zhengzhi',text:'【政治理论】党的创新理论1'},
+  {sub:'zhengzhi',text:'【政治理论】党的创新理论2'},
+  {sub:'zhengzhi',text:'【政治理论】党的创新理论3'},
+  {sub:'zhengzhi',text:'【政治理论】党的创新理论4'},
+  {sub:'zhengzhi',text:'【政治理论】党的创新理论5'},
+  {sub:'zhengzhi',text:'【政治理论】党的创新理论6'},
+  {sub:'zhengzhi',text:'【政治理论】党的创新理论7'}
+];
+function seedJingJiang() {
+  if (!appData.p1) appData.p1 = buildEmptySubjects();
+  const total = SUBJECTS.reduce((sum, s) => sum + ((appData.p1[s.key] && appData.p1[s.key].length) || 0), 0);
+  // 仅当精讲阶段完全没有任何任务时才填充默认课表
+  if (total > 0) return;
+  JINGJIANG_DEFAULT.forEach((item, idx) => {
+    if (!appData.p1[item.sub]) appData.p1[item.sub] = [];
+    appData.p1[item.sub].push({ id: 'jj' + idx, text: item.text, done: false });
+  });
+}
 
 // ==================== 夸夸刷阶段默认课表 ====================
 // 仅在用户从未使用过夸夸刷阶段时自动填充一次，保证已有进度不丢失
@@ -1148,7 +1310,8 @@ let appData = ld();
 appData.p1 = migratePhaseData(appData.p1 || []);
 appData.p2 = migratePhaseData(appData.p2 || []);
 appData.p3 = migratePhaseData(appData.p3 || []);
-// 填充夸夸刷默认课表（不覆盖已有进度）
+// 填充精讲/夸夸刷默认课表（不覆盖已有进度）
+seedJingJiang();
 seedKuaKuaShua();
 sv();
 
@@ -1397,7 +1560,17 @@ function delSubTask(n,subKey,id){
 }
 
 // ==================== 知识库 ====================
-const xcMods=[{name:'言语理解',icon:'🗣️',desc:'选词填空、片段阅读、语句表达',tags:['逻辑填空','阅读理解','语句排序','广东特色']},{name:'判断推理',icon:'🧩',desc:'图形推理、定义判断、类比推理、逻辑判断',tags:['图形推理','定义判断','类比推理','逻辑判断','科学推理']},{name:'资料分析',icon:'📈',desc:'增长量、增长率、比重、平均数、倍数',tags:['速算技巧','基期现期','增长率','比重问题']},{name:'数量关系',icon:'🔢',desc:'数学运算、数字推理',tags:['工程问题','行程问题','排列组合','广东数推']},{name:'常识判断',icon:'💡',desc:'政治、法律、经济、人文、科技',tags:['时政热点','法律常识','文史知识','广东省情']}];
+const xcMods=[
+  {name:'言语理解',icon:'🗣️',desc:'选词填空、片段阅读、语句表达',tags:['逻辑填空','阅读理解','语句排序','广东特色']},
+  {name:'图形推理',icon:'🧩',desc:'位置规律、样式规律、属性规律、数量规律、空间重构',tags:['位置规律','样式规律','属性规律','数量规律','空间重构']},
+  {name:'逻辑判断',icon:'⚖️',desc:'形式逻辑、论证逻辑、定义判断、类比推理、三段论',tags:['形式逻辑','论证逻辑','定义判断','类比推理','三段论']},
+  {name:'科学推理',icon:'🔬',desc:'物理、化学、生物基础科学推理',tags:['力学','电学','光学','化学','生物学']},
+  {name:'资料分析',icon:'📈',desc:'增长量、增长率、比重、平均数、倍数',tags:['速算技巧','基期现期','增长率','比重问题']},
+  {name:'数量关系',icon:'🔢',desc:'数学运算、数字推理',tags:['工程问题','行程问题','排列组合','广东数推']},
+  {name:'政治理论',icon:'🏛️',desc:'党的创新理论、习近平新时代中国特色社会主义思想',tags:['创新理论','时政热点','党建知识']},
+  {name:'常识',icon:'💡',desc:'政治、法律、经济、人文、科技',tags:['时政热点','法律常识','文史知识','广东省情']},
+  {name:'申论',icon:'📝',desc:'归纳概括、综合分析、提出对策、应用文、大作文',tags:['归纳概括','综合分析','应用文','大作文']}
+];
 function renderXC(){
   document.getElementById('xingceModules').innerHTML=xcMods.map((m,i)=>`<div class="accordion" id="xcAcc${i}"><div class="accordion-header" onclick="tgAcc('xcAcc${i}')"><span>${m.icon} ${m.name}</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><p style="margin-top:8px;color:var(--text-light);font-style:italic;">📤 上传超格笔记、讲义填充</p></div></div></div>`).join('');
 }
@@ -1498,8 +1671,122 @@ function renderHealth(){ renderWater(); renderWalk(); renderRecipe(); renderHMs(
 // ==================== 工具 ====================
 function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
+// ==================== 数据备份与恢复 ====================
+let _importFileData = null;
+
+function exportBackup() {
+  try {
+    const data = localStorage.getItem(SK);
+    if (!data) { toast('无数据可导出'); return; }
+    const now = new Date();
+    const dateStr = now.getFullYear() + '' +
+      String(now.getMonth()+1).padStart(2,'0') +
+      String(now.getDate()).padStart(2,'0');
+    const filename = '阿鱼的小助理_备份_' + dateStr + '.json';
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('✅ 备份文件已下载');
+  } catch(e) {
+    toast('导出失败：' + e.message);
+  }
+}
+
+function triggerImport() {
+  document.getElementById('backupFileInput').value = '';
+  document.getElementById('backupFileInput').click();
+}
+
+function handleImportFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!file.name.endsWith('.json')) { toast('请选择 .json 格式的备份文件'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed || typeof parsed !== 'object') { toast('文件内容无效'); return; }
+      _importFileData = parsed;
+      // 弹出确认弹窗
+      document.getElementById('importModal').classList.add('show');
+    } catch(err) {
+      toast('文件解析失败，请检查格式');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function closeImportModal() {
+  document.getElementById('importModal').classList.remove('show');
+  _importFileData = null;
+}
+
+function confirmImport(mode) {
+  if (!_importFileData) { toast('无备份数据'); closeImportModal(); return; }
+  try {
+    if (mode === 'overwrite') {
+      // 覆盖还原：直接用备份数据替换
+      localStorage.setItem(SK, JSON.stringify(_importFileData));
+    } else {
+      // 合并追加：保留本机数据，追加备份中的新项
+      const current = JSON.parse(localStorage.getItem(SK)) || def();
+      const backup = _importFileData;
+      // 合合数组类字段（追加，去重靠id）
+      const arrFields = ['tasks','durations','mockScores','checkins','wrongBook','walkLog'];
+      arrFields.forEach(f => {
+        const curArr = current[f] || [];
+        const bkArr = backup[f] || [];
+        const curIds = new Set(curArr.map(item => item.id));
+        bkArr.forEach(item => {
+          if (!curIds.has(item.id)) curArr.push(item);
+        });
+        current[f] = curArr;
+      });
+      // 合并对象类字段（饮水记录按日期合并）
+      ['waterLog'].forEach(f => {
+        const curObj = current[f] || {};
+        const bkObj = backup[f] || {};
+        Object.keys(bkObj).forEach(k => {
+          if (!curObj[k]) curObj[k] = bkObj[k];
+        });
+        current[f] = curObj;
+      });
+      // 合并三阶段科目任务（追加不重复的任务）
+      ['p1','p2','p3'].forEach(pk => {
+        const curPhase = migratePhaseData(current[pk] || buildEmptySubjects());
+        const bkPhase = migratePhaseData(backup[pk] || buildEmptySubjects());
+        SUBJECTS.forEach(sub => {
+          const curTasks = curPhase[sub.key] || [];
+          const bkTasks = bkPhase[sub.key] || [];
+          const curIds = new Set(curTasks.map(t => t.id));
+          bkTasks.forEach(t => {
+            if (!curIds.has(t.id)) curTasks.push(t);
+          });
+          curPhase[sub.key] = curTasks;
+        });
+        current[pk] = curPhase;
+      });
+      // 合并字符串字段（保留本机值，若空则取备份值）
+      if (!current.reviewText && backup.reviewText) current.reviewText = backup.reviewText;
+      if (!current.reviewDate && backup.reviewDate) current.reviewDate = backup.reviewDate;
+      if (!current.targetDate && backup.targetDate) current.targetDate = backup.targetDate;
+      if (!current.targetNote && backup.targetNote) current.targetNote = backup.targetNote;
+      localStorage.setItem(SK, JSON.stringify(current));
+    }
+    closeImportModal();
+    toast(mode === 'overwrite' ? '✅ 已还原备份，页面即将刷新' : '✅ 已合并数据，页面即将刷新');
+    setTimeout(() => location.reload(), 800);
+  } catch(e) {
+    toast('导入失败：' + e.message);
+  }
+}
+
 // ==================== 弹窗关闭（点击遮罩） ====================
-['dateModal','durationModal','wrongModal'].forEach(id=>{
+['dateModal','durationModal','wrongModal','importModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){ if(e.target===this) this.classList.remove('show'); });
 });
 
