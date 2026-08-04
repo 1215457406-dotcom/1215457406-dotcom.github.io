@@ -614,6 +614,15 @@ body {
   font-size: 13px; font-weight: 700; color: var(--olive);
   margin-bottom: 8px; display: flex; align-items: center; gap: 4px;
 }
+.note-filter-bar {
+  display: flex; flex-wrap: wrap; gap: 5px; align-items: center;
+  padding: 6px 8px; background: #FAFAF8; border-radius: var(--radius-xs);
+  border: 1px dashed var(--border);
+}
+.note-filter-bar .note-filter-label {
+  font-size: 11px; color: var(--text-light); margin-right: 2px;
+}
+.note-filter-bar .tag-chip { font-size: 11px; padding: 3px 8px; }
 .note-subject-block { margin-bottom: 12px; }
 .note-subject-header {
   display: flex; align-items: center; gap: 4px;
@@ -651,6 +660,25 @@ body {
   cursor: pointer; padding: 2px 6px;
 }
 .note-card .note-del-btn:active { color: #C62828; }
+.note-card .note-edit-btn {
+  position: absolute; top: 6px; right: 32px;
+  font-size: 11px; color: var(--olive-light); background: none; border: none;
+  cursor: pointer; padding: 2px 6px;
+  -webkit-tap-highlight-color: transparent;
+}
+.note-card .note-edit-btn:active { color: var(--olive); }
+.note-card.editing { border: 1.5px solid var(--olive); background: var(--white); }
+.note-card-edit-area {
+  width: 100%; min-height: 60px; padding: 8px 10px;
+  border: 1.5px solid var(--olive-light); border-radius: var(--radius-xs);
+  font-size: 13px; color: var(--text); line-height: 1.7; outline: none;
+  font-family: inherit; resize: vertical; background: var(--white);
+  white-space: pre-wrap; word-break: break-word;
+}
+.note-card-edit-area:focus { border-color: var(--olive); }
+.note-card-edit-actions {
+  display: flex; gap: 6px; margin-top: 6px; justify-content: flex-end;
+}
 .note-empty {
   font-size: 12px; color: var(--text-light); font-style: italic;
   padding: 8px 4px; text-align: center;
@@ -1839,6 +1867,8 @@ const xcMods=[
 ];
 // 行测每个模块的折叠展开状态（true=展开全部知识点）
 const xcExpandState = {};
+// 行测每个模块的标签筛选状态
+const xcTagFilterState = {};
 
 function renderXC(){
   const notes=appData.xcNotes||{};
@@ -1847,12 +1877,16 @@ function renderXC(){
       const tagList=getModuleTags('xc',m.name,m.tags);
       const noteArr=notes[m.name]||[];
       const cnt=noteArr.length;
-      return `<div class="accordion" id="xcAcc${i}"><div class="accordion-header" onclick="tgAcc('xcAcc${i}')"><span>${m.icon} ${m.name}</span><span class="acc-count" style="font-size:11px;color:var(--text-light);margin-left:auto;margin-right:8px;">${cnt}条</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><div class="note-section"><div class="note-section-title">📝 我的笔记 <span style="font-size:11px;color:var(--text-light);font-weight:400;">（可选标签 · 下拉查看全部）</span></div><div class="note-add-row"><textarea id="xcNoteInput_${m.name}" placeholder="记录这个模块的知识点、技巧..."></textarea></div><div class="tag-picker" id="xcTagPicker_${m.name}">${renderTagPicker(tagList,'xc',m.name)}</div><button class="btn btn-primary btn-xs btn-block" onclick="addXCNote('${m.name}')">+ 添加知识点</button><div id="xcNoteList_${m.name}" style="margin-top:8px;">${renderNoteList(noteArr,"xc",m.name,xcExpandState[m.name])}</div></div></div></div></div>`;
+      const tagFilter=xcTagFilterState[m.name]||'';
+      const filteredArr = tagFilter ? noteArr.filter(n=>(n.tags||[]).includes(tagFilter)) : noteArr;
+      return `<div class="accordion" id="xcAcc${i}"><div class="accordion-header" onclick="tgAcc('xcAcc${i}')"><span>${m.icon} ${m.name}</span><span class="acc-count" style="font-size:11px;color:var(--text-light);margin-left:auto;margin-right:8px;">${cnt}条</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><div class="note-section"><div class="note-section-title">📝 我的笔记 <span style="font-size:11px;color:var(--text-light);font-weight:400;">（可选标签 · 下拉查看全部）</span></div><div class="note-add-row"><textarea id="xcNoteInput_${m.name}" placeholder="记录这个模块的知识点、技巧..."></textarea></div><div class="tag-picker" id="xcTagPicker_${m.name}">${renderTagPicker(tagList,'xc',m.name)}</div><button class="btn btn-primary btn-xs btn-block" onclick="addXCNote('${m.name}')">+ 添加知识点</button><div id="xcNoteFilter_${m.name}" style="margin-top:8px;">${renderNoteFilterBar(tagList,'xc',m.name,tagFilter,filteredArr.length)}</div><div id="xcNoteList_${m.name}" style="margin-top:8px;">${renderNoteList(filteredArr,"xc",m.name,xcExpandState[m.name])}</div></div></div></div></div>`;
     }).join('');
 }
 const slMods=[{name:'基础题型框架',icon:'📋',desc:'概括归纳、综合分析、提出对策、贯彻执行',tags:['概括题','分析题','对策题','公文题']},{name:'应用文格式大全',icon:'📄',desc:'通知、报告、倡议书、讲话稿、调研报告',tags:['法定公文','事务文书','格式规范']},{name:'大作文素材库',icon:'✍️',desc:'开头模板、论证方法、结尾金句、热点素材',tags:['开头结尾','论证结构','名言金句','案例素材']},{name:'广东申论阅卷注意事项',icon:'⚠️',desc:'阅卷标准、常见失分点、高分特征',tags:['阅卷规则','评分标准','广东命题特点']}];
 // 申论每个板块的折叠展开状态
 const slExpandState = {};
+// 申论每个板块的标签筛选状态
+const slTagFilterState = {};
 
 function renderSL(){
   const notes=appData.slNotes||{};
@@ -1861,7 +1895,9 @@ function renderSL(){
       const tagList=getModuleTags('sl',m.name,m.tags);
       const noteArr=notes[m.name]||[];
       const cnt=noteArr.length;
-      return `<div class="accordion" id="slAcc${i}"><div class="accordion-header" onclick="tgAcc('slAcc${i}')"><span>${m.icon} ${m.name}</span><span class="acc-count" style="font-size:11px;color:var(--text-light);margin-left:auto;margin-right:8px;">${cnt}条</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><div class="note-section"><div class="note-section-title">📝 我的笔记 <span style="font-size:11px;color:var(--text-light);font-weight:400;">（可选标签 · 下拉查看全部）</span></div><div class="note-add-row"><textarea id="slNoteInput_${i}" placeholder="记录这个板块的知识点、素材..."></textarea></div><div class="tag-picker" id="slTagPicker_${i}">${renderTagPicker(tagList,'sl',i)}</div><button class="btn btn-primary btn-xs btn-block" onclick="addSLNote(${i})">+ 添加知识点</button><div id="slNoteList_${i}" style="margin-top:8px;">${renderNoteList(noteArr,"sl",i,slExpandState[i])}</div></div></div></div></div>`;
+      const tagFilter=slTagFilterState[i]||'';
+      const filteredArr = tagFilter ? noteArr.filter(n=>(n.tags||[]).includes(tagFilter)) : noteArr;
+      return `<div class="accordion" id="slAcc${i}"><div class="accordion-header" onclick="tgAcc('slAcc${i}')"><span>${m.icon} ${m.name}</span><span class="acc-count" style="font-size:11px;color:var(--text-light);margin-left:auto;margin-right:8px;">${cnt}条</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><div class="note-section"><div class="note-section-title">📝 我的笔记 <span style="font-size:11px;color:var(--text-light);font-weight:400;">（可选标签 · 下拉查看全部）</span></div><div class="note-add-row"><textarea id="slNoteInput_${i}" placeholder="记录这个板块的知识点、素材..."></textarea></div><div class="tag-picker" id="slTagPicker_${i}">${renderTagPicker(tagList,'sl',i)}</div><button class="btn btn-primary btn-xs btn-block" onclick="addSLNote(${i})">+ 添加知识点</button><div id="slNoteFilter_${i}" style="margin-top:8px;">${renderNoteFilterBar(tagList,'sl',i,tagFilter,filteredArr.length)}</div><div id="slNoteList_${i}" style="margin-top:8px;">${renderNoteList(filteredArr,"sl",i,slExpandState[i])}</div></div></div></div></div>`;
     }).join('');
 }
 function tgAcc(id){
@@ -1952,6 +1988,68 @@ function collectSelectedTags(prefix,key){
   return Array.from(picker.querySelectorAll('.tag-chip.selected')).map(c=>c.dataset.tag);
 }
 
+// ---- 知识库笔记：标签筛选条 ----
+function renderNoteFilterBar(tagList,prefix,key,currentFilter,filteredCount){
+  if(!tagList||tagList.length===0) return '';
+  let html='<div class="note-filter-bar"><span class="note-filter-label">标签筛选：</span>';
+  html+=`<span class="tag-chip ${currentFilter===''?'selected':''}" onclick="setNoteTagFilter('${prefix}','${key}','')">全部 ${getNoteCountForTag(prefix,key,'')}</span>`;
+  tagList.forEach(t=>{
+    const cnt=getNoteCountForTag(prefix,key,t);
+    if(cnt>0){
+      html+=`<span class="tag-chip ${currentFilter===t?'selected':''}" onclick="setNoteTagFilter('${prefix}','${key}','${esc(t)}')">${esc(t)} ${cnt}</span>`;
+    }
+  });
+  html+=`</div>`;
+  if(currentFilter){
+    html+=`<div style="font-size:11px;color:var(--text-light);margin-top:4px;">已筛选 ${filteredCount} 条 · <span style="color:var(--olive);cursor:pointer;" onclick="setNoteTagFilter('${prefix}','${key}','')">清除筛选</span></div>`;
+  }
+  return html;
+}
+// 统计某标签下的笔记数量
+function getNoteCountForTag(prefix,key,tag){
+  let notes,moduleName,arr;
+  if(prefix==='xc'){
+    notes=appData.xcNotes||{};
+    arr=notes[key]||[];
+  } else {
+    notes=appData.slNotes||{};
+    moduleName=slMods[parseInt(key)].name;
+    arr=notes[moduleName]||[];
+  }
+  if(!tag) return arr.length;
+  return arr.filter(n=>(n.tags||[]).includes(tag)).length;
+}
+// 设置笔记标签筛选
+function setNoteTagFilter(prefix,key,tag){
+  if(prefix==='xc'){
+    xcTagFilterState[key]=tag;
+    xcExpandState[key]=true; // 筛选时自动展开
+    const notes=appData.xcNotes||{};
+    const noteArr=notes[key]||[];
+    const filteredArr = tag ? noteArr.filter(n=>(n.tags||[]).includes(tag)) : noteArr;
+    const tagList=getModuleTags('xc',key,(xcMods.find(x=>x.name===key)||{tags:[]}).tags);
+    const filterEl=document.getElementById('xcNoteFilter_'+key);
+    if(filterEl) filterEl.innerHTML=renderNoteFilterBar(tagList,'xc',key,tag,filteredArr.length);
+    const listEl=document.getElementById('xcNoteList_'+key);
+    if(listEl) listEl.innerHTML=renderNoteList(filteredArr,'xc',key,xcExpandState[key]);
+    removeAccordionHeightLimit(listEl);
+  } else {
+    const idx=parseInt(key);
+    slTagFilterState[idx]=tag;
+    slExpandState[idx]=true;
+    const notes=appData.slNotes||{};
+    const moduleName=slMods[idx].name;
+    const noteArr=notes[moduleName]||[];
+    const filteredArr = tag ? noteArr.filter(n=>(n.tags||[]).includes(tag)) : noteArr;
+    const tagList=getModuleTags('sl',moduleName,(slMods[idx]||{tags:[]}).tags);
+    const filterEl=document.getElementById('slNoteFilter_'+idx);
+    if(filterEl) filterEl.innerHTML=renderNoteFilterBar(tagList,'sl',idx,tag,filteredArr.length);
+    const listEl=document.getElementById('slNoteList_'+idx);
+    if(listEl) listEl.innerHTML=renderNoteList(filteredArr,'sl',idx,slExpandState[idx]);
+    removeAccordionHeightLimit(listEl);
+  }
+}
+
 // ---- 知识库笔记：通用渲染与操作 ----
 const NOTE_COLLAPSE_LIMIT = 3; // 折叠时最多显示条数
 function renderNoteList(arr,prefix,key,expanded){
@@ -1971,15 +2069,77 @@ function renderSingleNote(n,prefix,key){
   if(tags.length>0){
     tagHtml = '<div class="note-card-tags">'+tags.map(t=>`<span class="note-card-tag">${esc(t)}</span>`).join('')+'</div>';
   }
-  return `<div class="note-card"><button class="note-del-btn" onclick="delNote('${prefix}','${key}','${n.id}')">✕</button>${esc(n.text)}${tagHtml}<div class="note-card-meta">${n.date} · <span style="color:var(--olive);cursor:pointer;" onclick="openNoteTagEditor('${prefix}','${key}','${n.id}')">编辑标签</span></div></div>`;
+  return `<div class="note-card" id="noteCard_${n.id}"><button class="note-del-btn" onclick="delNote('${prefix}','${key}','${n.id}')">✕</button><button class="note-edit-btn" onclick="startNoteEdit('${prefix}','${key}','${n.id}')">编辑</button>${esc(n.text)}${tagHtml}<div class="note-card-meta">${n.date} · <span style="color:var(--olive);cursor:pointer;" onclick="openNoteTagEditor('${prefix}','${key}','${n.id}')">编辑标签</span></div></div>`;
+}
+// 开始编辑笔记内容
+function startNoteEdit(prefix,key,id){
+  let field,moduleName;
+  if(prefix==='xc'){ field='xcNotes'; moduleName=key; }
+  else { field='slNotes'; moduleName=slMods[parseInt(key)].name; }
+  const notes=appData[field]||{};
+  const arr=notes[moduleName]||[];
+  const note=arr.find(n=>n.id===id);
+  if(!note) return;
+  const card=document.getElementById('noteCard_'+id);
+  if(!card) return;
+  card.classList.add('editing');
+  card.innerHTML=`<textarea class="note-card-edit-area" id="noteEditArea_${id}">${esc(note.text)}</textarea><div class="note-card-edit-actions"><button class="btn btn-ghost btn-xs" onclick="cancelNoteEdit('${prefix}','${key}')">取消</button><button class="btn btn-primary btn-xs" onclick="saveNoteEdit('${prefix}','${key}','${id}')">保存</button></div>`;
+  const ta=document.getElementById('noteEditArea_'+id);
+  if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); }
+}
+// 取消编辑笔记
+function cancelNoteEdit(prefix,key){
+  refreshNoteList(prefix,key);
+}
+// 保存编辑后的笔记内容
+function saveNoteEdit(prefix,key,id){
+  let field,moduleName;
+  if(prefix==='xc'){ field='xcNotes'; moduleName=key; }
+  else { field='slNotes'; moduleName=slMods[parseInt(key)].name; }
+  const ta=document.getElementById('noteEditArea_'+id);
+  if(!ta) return;
+  const text=ta.value.trim();
+  if(!text){ toast('内容不能为空'); return; }
+  const notes=appData[field]||{};
+  const arr=notes[moduleName]||[];
+  const note=arr.find(n=>n.id===id);
+  if(note){
+    note.text=text;
+    sv();
+  }
+  refreshNoteList(prefix,key);
+  toast('已修改 ✓');
+}
+// 刷新笔记列表（局部刷新，保留展开状态和标签筛选状态）
+function refreshNoteList(prefix,key){
+  if(prefix==='xc'){
+    const notes=appData.xcNotes||{};
+    const tagFilter=xcTagFilterState[key]||'';
+    const filteredArr = tagFilter ? (notes[key]||[]).filter(n=>(n.tags||[]).includes(tagFilter)) : (notes[key]||[]);
+    const listEl=document.getElementById('xcNoteList_'+key);
+    if(listEl) listEl.innerHTML=renderNoteList(filteredArr,'xc',key,xcExpandState[key]);
+    if(xcExpandState[key]) removeAccordionHeightLimit(listEl);
+  } else {
+    const idx=parseInt(key);
+    const notes=appData.slNotes||{};
+    const moduleName=slMods[idx].name;
+    const tagFilter=slTagFilterState[idx]||'';
+    const filteredArr = tagFilter ? (notes[moduleName]||[]).filter(n=>(n.tags||[]).includes(tagFilter)) : (notes[moduleName]||[]);
+    const listEl=document.getElementById('slNoteList_'+idx);
+    if(listEl) listEl.innerHTML=renderNoteList(filteredArr,'sl',idx,slExpandState[idx]);
+    if(slExpandState[idx]) removeAccordionHeightLimit(listEl);
+  }
 }
 // 展开/收起笔记列表
 function toggleNoteExpand(prefix,key){
   if(prefix==='xc'){
     xcExpandState[key] = !xcExpandState[key];
     const notes=appData.xcNotes||{};
+    const tagFilter=xcTagFilterState[key]||'';
+    const noteArr=notes[key]||[];
+    const filteredArr = tagFilter ? noteArr.filter(n=>(n.tags||[]).includes(tagFilter)) : noteArr;
     const listEl=document.getElementById('xcNoteList_'+key);
-    if(listEl) listEl.innerHTML=renderNoteList(notes[key]||[],'xc',key,xcExpandState[key]);
+    if(listEl) listEl.innerHTML=renderNoteList(filteredArr,'xc',key,xcExpandState[key]);
     // 展开后移除 accordion-body 的 max-height 限制，防止内容被截断
     if(xcExpandState[key]) removeAccordionHeightLimit(listEl);
   } else {
@@ -1987,8 +2147,11 @@ function toggleNoteExpand(prefix,key){
     slExpandState[idx] = !slExpandState[idx];
     const notes=appData.slNotes||{};
     const moduleName=slMods[idx].name;
+    const tagFilter=slTagFilterState[idx]||'';
+    const noteArr=notes[moduleName]||[];
+    const filteredArr = tagFilter ? noteArr.filter(n=>(n.tags||[]).includes(tagFilter)) : noteArr;
     const listEl=document.getElementById('slNoteList_'+idx);
-    if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName]||[],'sl',idx,slExpandState[idx]);
+    if(listEl) listEl.innerHTML=renderNoteList(filteredArr,'sl',idx,slExpandState[idx]);
     if(slExpandState[idx]) removeAccordionHeightLimit(listEl);
   }
 }
@@ -2024,7 +2187,15 @@ function addXCNote(moduleName){
   const picker=document.getElementById('xcTagPicker_'+moduleName);
   if(picker) picker.querySelectorAll('.tag-chip.selected').forEach(c=>c.classList.remove('selected'));
   const listEl=document.getElementById('xcNoteList_'+moduleName);
-  if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'xc',moduleName,xcExpandState[moduleName]);
+  if(listEl){
+    // 刷新筛选条和列表（考虑当前筛选状态）
+    const tagFilter=xcTagFilterState[moduleName]||'';
+    const filteredArr = tagFilter ? notes[moduleName].filter(n=>(n.tags||[]).includes(tagFilter)) : notes[moduleName];
+    const tagList=getModuleTags('xc',moduleName,(xcMods.find(x=>x.name===moduleName)||{tags:[]}).tags);
+    const filterEl=document.getElementById('xcNoteFilter_'+moduleName);
+    if(filterEl) filterEl.innerHTML=renderNoteFilterBar(tagList,'xc',moduleName,tagFilter,filteredArr.length);
+    listEl.innerHTML=renderNoteList(filteredArr,'xc',moduleName,xcExpandState[moduleName]);
+  }
   // 同步更新模块头部计数
   const countEl = document.querySelector(`#xcAcc${xcMods.findIndex(m=>m.name===moduleName)} .acc-count`);
   if(countEl) countEl.textContent = (notes[moduleName].length)+'条';
@@ -2047,7 +2218,15 @@ function addSLNote(idx){
   const picker=document.getElementById('slTagPicker_'+idx);
   if(picker) picker.querySelectorAll('.tag-chip.selected').forEach(c=>c.classList.remove('selected'));
   const listEl=document.getElementById('slNoteList_'+idx);
-  if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'sl',idx,slExpandState[idx]);
+  if(listEl){
+    // 刷新筛选条和列表（考虑当前筛选状态）
+    const tagFilter=slTagFilterState[idx]||'';
+    const filteredArr = tagFilter ? notes[moduleName].filter(n=>(n.tags||[]).includes(tagFilter)) : notes[moduleName];
+    const tagList=getModuleTags('sl',moduleName,(slMods[idx]||{tags:[]}).tags);
+    const filterEl=document.getElementById('slNoteFilter_'+idx);
+    if(filterEl) filterEl.innerHTML=renderNoteFilterBar(tagList,'sl',idx,tagFilter,filteredArr.length);
+    listEl.innerHTML=renderNoteList(filteredArr,'sl',idx,slExpandState[idx]);
+  }
   // 同步更新模块头部计数
   const countEl = document.querySelector(`#slAcc${idx} .acc-count`);
   if(countEl) countEl.textContent = (notes[moduleName].length)+'条';
@@ -2066,18 +2245,31 @@ function delNote(prefix,key,id){
   if(notes[moduleName]){
     notes[moduleName]=notes[moduleName].filter(n=>n.id!==id);
     sv();
-    // 局部刷新对应列表
+    // 局部刷新对应列表（考虑筛选状态）
     if(prefix==='xc'){
+      const tagFilter=xcTagFilterState[moduleName]||'';
+      const filteredArr = tagFilter ? notes[moduleName].filter(n=>(n.tags||[]).includes(tagFilter)) : notes[moduleName];
+      const tagList=getModuleTags('xc',moduleName,(xcMods.find(x=>x.name===moduleName)||{tags:[]}).tags);
+      const filterEl=document.getElementById('xcNoteFilter_'+moduleName);
+      if(filterEl) filterEl.innerHTML=renderNoteFilterBar(tagList,'xc',moduleName,tagFilter,filteredArr.length);
       const listEl=document.getElementById('xcNoteList_'+moduleName);
-      if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'xc',moduleName,xcExpandState[moduleName]);
+      if(listEl) listEl.innerHTML=renderNoteList(filteredArr,'xc',moduleName,xcExpandState[moduleName]);
       const idx=xcMods.findIndex(m=>m.name===moduleName);
       const countEl=document.querySelector(`#xcAcc${idx} .acc-count`);
       if(countEl) countEl.textContent=(notes[moduleName].length)+'条';
+      if(xcExpandState[moduleName]) removeAccordionHeightLimit(listEl);
     } else {
-      const listEl=document.getElementById('slNoteList_'+key);
-      if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'sl',key,slExpandState[parseInt(key)]);
-      const countEl=document.querySelector(`#slAcc${key} .acc-count`);
+      const idx2=parseInt(key);
+      const tagFilter=slTagFilterState[idx2]||'';
+      const filteredArr = tagFilter ? notes[moduleName].filter(n=>(n.tags||[]).includes(tagFilter)) : notes[moduleName];
+      const tagList=getModuleTags('sl',moduleName,(slMods[idx2]||{tags:[]}).tags);
+      const filterEl=document.getElementById('slNoteFilter_'+idx2);
+      if(filterEl) filterEl.innerHTML=renderNoteFilterBar(tagList,'sl',idx2,tagFilter,filteredArr.length);
+      const listEl=document.getElementById('slNoteList_'+idx2);
+      if(listEl) listEl.innerHTML=renderNoteList(filteredArr,'sl',idx2,slExpandState[idx2]);
+      const countEl=document.querySelector(`#slAcc${idx2} .acc-count`);
       if(countEl) countEl.textContent=(notes[moduleName].length)+'条';
+      if(slExpandState[idx2]) removeAccordionHeightLimit(listEl);
     }
     toast('已删除');
   }
@@ -2236,14 +2428,25 @@ function saveNoteTags(){
     if(!tagStore[moduleName]) tagStore[moduleName]=[];
     tags.forEach(t=>{ if(!tagStore[moduleName].includes(t)) tagStore[moduleName].push(t); });
     sv();
-    // 局部刷新列表与标签选择器
+    // 局部刷新列表、筛选条与标签选择器（考虑筛选状态）
     if(prefix==='xc'){
+      const tagFilter=xcTagFilterState[moduleName]||'';
+      const filteredArr = tagFilter ? arr.filter(n=>(n.tags||[]).includes(tagFilter)) : arr;
+      const tagList=getModuleTags('xc',moduleName,(xcMods.find(x=>x.name===moduleName)||{tags:[]}).tags);
+      const filterEl=document.getElementById('xcNoteFilter_'+moduleName);
+      if(filterEl) filterEl.innerHTML=renderNoteFilterBar(tagList,'xc',moduleName,tagFilter,filteredArr.length);
       const listEl=document.getElementById('xcNoteList_'+moduleName);
-      if(listEl) listEl.innerHTML=renderNoteList(arr,'xc',moduleName,xcExpandState[moduleName]);
+      if(listEl) listEl.innerHTML=renderNoteList(filteredArr,'xc',moduleName,xcExpandState[moduleName]);
       refreshTagPicker('xc',moduleName,[]);
     } else {
-      const listEl=document.getElementById('slNoteList_'+key);
-      if(listEl) listEl.innerHTML=renderNoteList(arr,'sl',key,slExpandState[parseInt(key)]);
+      const idx=parseInt(key);
+      const tagFilter=slTagFilterState[idx]||'';
+      const filteredArr = tagFilter ? arr.filter(n=>(n.tags||[]).includes(tagFilter)) : arr;
+      const tagList=getModuleTags('sl',moduleName,(slMods[idx]||{tags:[]}).tags);
+      const filterEl=document.getElementById('slNoteFilter_'+idx);
+      if(filterEl) filterEl.innerHTML=renderNoteFilterBar(tagList,'sl',idx,tagFilter,filteredArr.length);
+      const listEl=document.getElementById('slNoteList_'+idx);
+      if(listEl) listEl.innerHTML=renderNoteList(filteredArr,'sl',idx,slExpandState[idx]);
       refreshTagPicker('sl',key,[]);
     }
     toast('标签已更新 ✓');
@@ -2279,7 +2482,7 @@ function renderWB(){
     const questionHtml=w.question?`<div class="wrong-question">${esc(w.question)}</div>`:(imgs.length>0?'<div class="wrong-question" style="color:var(--text-light);font-style:italic;">📷 图片题</div>':'');
     const wTags=w.tags||[];
     const tagHtml=wTags.length>0?`<div class="wrong-card-tags">${wTags.map(t=>`<span class="wrong-card-tag">${esc(t)}</span>`).join('')}</div>`:'';
-    return `<div class="wrong-card"><div class="wrong-card-header"><span class="task-tag" style="background:${bg};color:${cl};">${w.phase}</span><span class="task-tag" style="background:var(--tag-purple);color:var(--tag-purple-text);">${w.module}</span>${w.reviewCount>=3?'<span class="wrong-review-badge r3">三刷</span>':w.reviewCount>=2?'<span class="wrong-review-badge r2">二刷</span>':''}<button class="btn btn-ghost btn-xs" style="margin-left:auto;" onclick="delWrong('${w.id}')">删</button></div>${questionHtml}${imgHtml}${w.reason?`<div class="wrong-detail"><strong>错误原因：</strong>${esc(w.reason)}</div>`:''}${w.solution?`<div class="wrong-detail"><strong>正确思路：</strong>${esc(w.solution)}</div>`:''}${tagHtml}<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-outline btn-xs" onclick="markRev('${w.id}')">标记复习 (${w.reviewCount||1}刷)</button><button class="btn btn-ghost btn-xs" onclick="openWrongTagEditor('${w.id}')">🏷️ 编辑标签</button></div></div>`;
+    return `<div class="wrong-card"><div class="wrong-card-header"><span class="task-tag" style="background:${bg};color:${cl};">${w.phase}</span><span class="task-tag" style="background:var(--tag-purple);color:var(--tag-purple-text);">${w.module}</span>${w.reviewCount>=3?'<span class="wrong-review-badge r3">三刷</span>':w.reviewCount>=2?'<span class="wrong-review-badge r2">二刷</span>':''}<button class="btn btn-outline btn-xs" style="margin-left:auto;" onclick="editWrong('${w.id}')">编辑</button><button class="btn btn-ghost btn-xs" onclick="delWrong('${w.id}')">删</button></div>${questionHtml}${imgHtml}${w.reason?`<div class="wrong-detail"><strong>错误原因：</strong>${esc(w.reason)}</div>`:''}${w.solution?`<div class="wrong-detail"><strong>正确思路：</strong>${esc(w.solution)}</div>`:''}${tagHtml}<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-outline btn-xs" onclick="markRev('${w.id}')">标记复习 (${w.reviewCount||1}刷)</button><button class="btn btn-ghost btn-xs" onclick="openWrongTagEditor('${w.id}')">🏷️ 编辑标签</button></div></div>`;
   }).join('');
   // 展开/收起按钮
   if(fl.length>WB_COLLAPSE_LIMIT){
@@ -2320,8 +2523,17 @@ function showFullImg(wid,fi){
 }
 // ---- 错题图片上传（弹窗内临时存储）----
 let _wrongTempImages=[];
+let _wrongEditId = null; // 编辑模式时保存的错题ID，null=新增模式
 function openWrongModal(){
   _wrongTempImages=[];
+  _wrongEditId=null;
+  document.getElementById('wrongModal').querySelector('.modal-title').textContent='❌ 录入错题';
+  // 清空所有输入
+  document.getElementById('wrongQuestionInput').value='';
+  document.getElementById('wrongReasonInput').value='';
+  document.getElementById('wrongSolutionInput').value='';
+  document.getElementById('wrongPhaseInput').value='精讲阶段';
+  document.getElementById('wrongModuleInput').value='言语理解';
   document.getElementById('wrongImgPreview').innerHTML='';
   document.getElementById('wrongImgPlaceholder').style.display='block';
   document.getElementById('wrongImgUploadArea').classList.remove('has-imgs');
@@ -2329,7 +2541,33 @@ function openWrongModal(){
   renderWrongTagPicker([]);
   document.getElementById('wrongModal').classList.add('show');
 }
-function closeWrongModal(){ document.getElementById('wrongModal').classList.remove('show'); }
+// 编辑已有错题
+function editWrong(id){
+  const w=(appData.wrongBook||[]).find(x=>x.id===id);
+  if(!w) return;
+  _wrongEditId=id;
+  _wrongTempImages=[];
+  // 加载已有数据到表单
+  document.getElementById('wrongModal').querySelector('.modal-title').textContent='✏️ 编辑错题';
+  document.getElementById('wrongQuestionInput').value=w.question||'';
+  document.getElementById('wrongReasonInput').value=w.reason||'';
+  document.getElementById('wrongSolutionInput').value=w.solution||'';
+  document.getElementById('wrongPhaseInput').value=w.phase||'精讲阶段';
+  document.getElementById('wrongModuleInput').value=w.module||'言语理解';
+  // 加载已有图片
+  if(w.images && w.images.length>0){
+    _wrongTempImages=[...w.images];
+    renderWrongImgPreview();
+  } else {
+    document.getElementById('wrongImgPreview').innerHTML='';
+    document.getElementById('wrongImgPlaceholder').style.display='block';
+    document.getElementById('wrongImgUploadArea').classList.remove('has-imgs');
+  }
+  // 初始化标签选择器（预选已有标签）
+  renderWrongTagPicker(w.tags||[]);
+  document.getElementById('wrongModal').classList.add('show');
+}
+function closeWrongModal(){ document.getElementById('wrongModal').classList.remove('show'); _wrongEditId=null; }
 function handleWrongImages(input){
   const files=input.files;
   if(!files||files.length===0) return;
@@ -2389,25 +2627,55 @@ function saveWrong(){
   if(!question && images.length===0){ toast('请输入题目内容或上传图片'); return; }
   // 收集选中的标签
   const selectedTags = collectWrongSelectedTags();
-  const w={id:Date.now().toString(),question:question,phase:document.getElementById('wrongPhaseInput').value,module:document.getElementById('wrongModuleInput').value,reason:document.getElementById('wrongReasonInput').value.trim(),solution:document.getElementById('wrongSolutionInput').value.trim(),reviewCount:1,date:new Date().toISOString().split('T')[0]};
-  if(images.length>0) w.images=images;
-  if(selectedTags.length>0) w.tags=selectedTags;
-  if(!appData.wrongBook)appData.wrongBook=[]; appData.wrongBook.unshift(w); sv(); closeWrongModal(); renderWB();
+  const phase=document.getElementById('wrongPhaseInput').value;
+  const module=document.getElementById('wrongModuleInput').value;
+  const reason=document.getElementById('wrongReasonInput').value.trim();
+  const solution=document.getElementById('wrongSolutionInput').value.trim();
+  if(_wrongEditId){
+    // 编辑模式：更新已有错题
+    const w=(appData.wrongBook||[]).find(x=>x.id===_wrongEditId);
+    if(w){
+      w.question=question;
+      w.phase=phase;
+      w.module=module;
+      w.reason=reason;
+      w.solution=solution;
+      if(images.length>0) w.images=images;
+      else delete w.images;
+      if(selectedTags.length>0) w.tags=selectedTags;
+      else delete w.tags;
+      sv();
+      closeWrongModal();
+      renderWB();
+      toast('已修改 ✓');
+    }
+  } else {
+    // 新增模式
+    const w={id:Date.now().toString(),question:question,phase:phase,module:module,reason:reason,solution:solution,reviewCount:1,date:new Date().toISOString().split('T')[0]};
+    if(images.length>0) w.images=images;
+    if(selectedTags.length>0) w.tags=selectedTags;
+    if(!appData.wrongBook)appData.wrongBook=[]; appData.wrongBook.unshift(w); sv(); closeWrongModal(); renderWB();
+    toast('已添加 ✓');
+  }
   // 重置表单
   document.getElementById('wrongQuestionInput').value='';
   document.getElementById('wrongReasonInput').value='';
   document.getElementById('wrongSolutionInput').value='';
   _wrongTempImages=[];
+  _wrongEditId=null;
 }
 function delWrong(id){ appData.wrongBook=(appData.wrongBook||[]).filter(w=>w.id!==id); sv(); renderWB(); }
 function markRev(id){ const w=(appData.wrongBook||[]).find(w=>w.id===id); if(w){w.reviewCount=(w.reviewCount||1)+1;sv();renderWB();} }
 
 // ---- 错题标签选择器（录入弹窗内）----
 function renderWrongTagPicker(selectedTags){
+  selectedTags=selectedTags||[];
   const wbTags = appData.wbTags||['高频考点','易错陷阱','公式技巧','广东特色','需二刷','已掌握'];
+  // 合并：标签库 + 该错题已有但不在标签库中的标签
+  const allTags = Array.from(new Set([...wbTags, ...selectedTags]));
   const container = document.getElementById('wrongTagPicker');
   if(!container) return;
-  let html = wbTags.map(t=>{
+  let html = allTags.map(t=>{
     const sel = selectedTags.includes(t)?'selected':'';
     return `<span class="tag-chip ${sel}" data-tag="${esc(t)}" onclick="this.classList.toggle('selected')">${esc(t)}</span>`;
   }).join('');
