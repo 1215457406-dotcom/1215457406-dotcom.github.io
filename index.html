@@ -606,6 +606,97 @@ body {
 .subject-input-row input:focus { border-color: var(--olive); }
 .subject-task-list { list-style: none; }
 
+/* ===== 知识库笔记 ===== */
+.note-section { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+.note-section-title {
+  font-size: 13px; font-weight: 700; color: var(--olive);
+  margin-bottom: 8px; display: flex; align-items: center; gap: 4px;
+}
+.note-subject-block { margin-bottom: 12px; }
+.note-subject-header {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 13px; font-weight: 600; color: var(--olive-dark);
+  padding: 6px 10px; background: var(--olive-bg); border-radius: var(--radius-xs);
+  margin-bottom: 6px; cursor: pointer; user-select: none;
+}
+.note-subject-header:active { background: var(--olive-pale); }
+.note-subject-count { font-size: 11px; color: var(--text-light); font-weight: 500; margin-left: auto; }
+.note-subject-toggle { font-size: 10px; color: var(--text-light); transition: transform 0.2s ease; }
+.note-subject-block.collapsed .note-subject-toggle { transform: rotate(-90deg); }
+.note-subject-block.collapsed .note-subject-body { display: none; }
+.note-subject-body { padding: 0 2px; }
+.note-add-row {
+  display: flex; gap: 6px; margin-bottom: 8px;
+}
+.note-add-row textarea {
+  flex: 1; padding: 8px 10px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs); font-size: 13px; outline: none;
+  min-height: 50px; resize: vertical; font-family: inherit; line-height: 1.5;
+}
+.note-add-row textarea:focus { border-color: var(--olive); }
+.note-card {
+  background: #FAFAF8; border: 1px solid var(--border-light);
+  border-radius: var(--radius-xs); padding: 10px 12px; margin-bottom: 6px;
+  font-size: 13px; color: var(--text); line-height: 1.7;
+  white-space: pre-wrap; word-break: break-word; position: relative;
+}
+.note-card-meta {
+  font-size: 11px; color: var(--text-light); margin-top: 4px;
+}
+.note-card .note-del-btn {
+  position: absolute; top: 6px; right: 6px;
+  font-size: 11px; color: var(--text-light); background: none; border: none;
+  cursor: pointer; padding: 2px 6px;
+}
+.note-card .note-del-btn:active { color: #C62828; }
+.note-empty {
+  font-size: 12px; color: var(--text-light); font-style: italic;
+  padding: 8px 4px; text-align: center;
+}
+
+/* ===== 错题图片 ===== */
+.wrong-images {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0;
+}
+.wrong-img-thumb {
+  width: 70px; height: 70px; object-fit: cover;
+  border-radius: var(--radius-xs); border: 1px solid var(--border);
+  cursor: pointer;
+}
+.wrong-img-full-overlay {
+  display: none; position: fixed; inset: 0; z-index: 400;
+  background: rgba(0,0,0,0.9); align-items: center; justify-content: center;
+  padding: 20px;
+}
+.wrong-img-full-overlay.show { display: flex; }
+.wrong-img-full-overlay img {
+  max-width: 100%; max-height: 100%; border-radius: 8px;
+}
+.img-upload-area {
+  border: 2px dashed var(--border); border-radius: var(--radius-xs);
+  padding: 16px; text-align: center; margin-bottom: 8px;
+  cursor: pointer; transition: var(--transition);
+}
+.img-upload-area:active { border-color: var(--olive); background: var(--olive-bg); }
+.img-upload-area.has-imgs { padding: 8px; }
+.img-upload-preview {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.img-upload-preview-item {
+  position: relative; width: 64px; height: 64px;
+}
+.img-upload-preview-item img {
+  width: 64px; height: 64px; object-fit: cover;
+  border-radius: 8px; border: 1px solid var(--border);
+}
+.img-upload-preview-item .remove-img {
+  position: absolute; top: -6px; right: -6px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #C62828; color: white; border: none;
+  font-size: 12px; line-height: 20px; text-align: center;
+  cursor: pointer; padding: 0;
+}
+
 /* ===== 双列网格（仅限大屏手机横屏，默认堆叠） ===== */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 </style>
@@ -971,6 +1062,12 @@ body {
     <div class="modal-title">❌ 录入错题</div>
     <label>题目内容</label>
     <textarea id="wrongQuestionInput" placeholder="输入题目内容..."></textarea>
+    <label>📸 上传题目图片（可选）</label>
+    <div class="img-upload-area" id="wrongImgUploadArea" onclick="document.getElementById('wrongImgInput').click()">
+      <div id="wrongImgPlaceholder" style="font-size:13px;color:var(--text-light);">📷 点击上传题目截图（可多张）</div>
+      <div class="img-upload-preview" id="wrongImgPreview"></div>
+      <input type="file" id="wrongImgInput" accept="image/*" multiple style="display:none;" onchange="handleWrongImages(this)">
+    </div>
     <div style="display:flex;gap:8px;">
       <div style="flex:1;"><label>阶段</label>
         <select id="wrongPhaseInput">
@@ -1002,6 +1099,11 @@ body {
       <button class="btn btn-primary" onclick="saveWrong()">保存</button>
     </div>
   </div>
+</div>
+
+<!-- ===== 图片全屏查看 ===== -->
+<div class="wrong-img-full-overlay" id="imgFullOverlay" onclick="this.classList.remove('show')">
+  <img id="imgFullSrc" src="">
 </div>
 
 <!-- ===== 弹窗：导入确认 ===== -->
@@ -1054,7 +1156,10 @@ function def() {
     // 三个阶段各按科目存储
     p1: buildEmptySubjects(),
     p2: buildEmptySubjects(),
-    p3: buildEmptySubjects()
+    p3: buildEmptySubjects(),
+    // 知识库笔记（行测/申论，按科目模块分组）
+    xcNotes: {},
+    slNotes: {}
   };
 }
 function buildEmptySubjects() {
@@ -1316,6 +1421,9 @@ let appData = ld();
 appData.p1 = migratePhaseData(appData.p1 || []);
 appData.p2 = migratePhaseData(appData.p2 || []);
 appData.p3 = migratePhaseData(appData.p3 || []);
+// 兼容旧数据：确保笔记字段存在（不修改已有存储结构，仅补充新字段）
+if(!appData.xcNotes) appData.xcNotes = {};
+if(!appData.slNotes) appData.slNotes = {};
 // 填充精讲/夸夸刷默认课表（不覆盖已有进度）
 seedJingJiang();
 seedKuaKuaShua();
@@ -1578,29 +1686,174 @@ const xcMods=[
   {name:'申论',icon:'📝',desc:'归纳概括、综合分析、提出对策、应用文、大作文',tags:['归纳概括','综合分析','应用文','大作文']}
 ];
 function renderXC(){
-  document.getElementById('xingceModules').innerHTML=xcMods.map((m,i)=>`<div class="accordion" id="xcAcc${i}"><div class="accordion-header" onclick="tgAcc('xcAcc${i}')"><span>${m.icon} ${m.name}</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><p style="margin-top:8px;color:var(--text-light);font-style:italic;">📤 上传超格笔记、讲义填充</p></div></div></div>`).join('');
+  const notes=appData.xcNotes||{};
+  document.getElementById('xingceModules').innerHTML=
+    xcMods.map((m,i)=>`<div class="accordion" id="xcAcc${i}"><div class="accordion-header" onclick="tgAcc('xcAcc${i}')"><span>${m.icon} ${m.name}</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><div class="note-section"><div class="note-section-title">📝 我的笔记</div><div class="note-add-row"><textarea id="xcNoteInput_${m.name}" placeholder="记录这个模块的知识点、技巧..."></textarea></div><button class="btn btn-primary btn-xs btn-block" onclick="addXCNote('${m.name}')">+ 添加知识点</button><div id="xcNoteList_${m.name}" style="margin-top:8px;">${renderNoteList(notes[m.name]||[],"xc",m.name)}</div></div></div></div></div>`).join('');
 }
 const slMods=[{name:'基础题型框架',icon:'📋',desc:'概括归纳、综合分析、提出对策、贯彻执行',tags:['概括题','分析题','对策题','公文题']},{name:'应用文格式大全',icon:'📄',desc:'通知、报告、倡议书、讲话稿、调研报告',tags:['法定公文','事务文书','格式规范']},{name:'大作文素材库',icon:'✍️',desc:'开头模板、论证方法、结尾金句、热点素材',tags:['开头结尾','论证结构','名言金句','案例素材']},{name:'广东申论阅卷注意事项',icon:'⚠️',desc:'阅卷标准、常见失分点、高分特征',tags:['阅卷规则','评分标准','广东命题特点']}];
 function renderSL(){
-  document.getElementById('shenlunModules').innerHTML=slMods.map((m,i)=>`<div class="accordion" id="slAcc${i}"><div class="accordion-header" onclick="tgAcc('slAcc${i}')"><span>${m.icon} ${m.name}</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><p style="margin-top:8px;color:var(--text-light);font-style:italic;">📤 上传超格笔记、讲义填充</p></div></div></div>`).join('');
+  const notes=appData.slNotes||{};
+  document.getElementById('shenlunModules').innerHTML=
+    slMods.map((m,i)=>`<div class="accordion" id="slAcc${i}"><div class="accordion-header" onclick="tgAcc('slAcc${i}')"><span>${m.icon} ${m.name}</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><div class="note-section"><div class="note-section-title">📝 我的笔记</div><div class="note-add-row"><textarea id="slNoteInput_${i}" placeholder="记录这个板块的知识点、素材..."></textarea></div><button class="btn btn-primary btn-xs btn-block" onclick="addSLNote(${i})">+ 添加知识点</button><div id="slNoteList_${i}" style="margin-top:8px;">${renderNoteList(notes[m.name]||[],"sl",i)}</div></div></div></div></div>`).join('');
 }
 function tgAcc(id){ document.getElementById(id).classList.toggle('open'); }
+
+// ---- 知识库笔记：通用渲染与操作 ----
+function renderNoteList(arr,prefix,key){
+  if(!arr||arr.length===0) return '<div class="note-empty">暂无笔记，点击上方添加</div>';
+  return arr.map(n=>`<div class="note-card"><button class="note-del-btn" onclick="delNote('${prefix}','${key}','${n.id}')">✕</button>${esc(n.text)}<div class="note-card-meta">${n.date}</div></div>`).join('');
+}
+function ensureNotes(field){
+  if(!appData[field]) appData[field]={};
+  return appData[field];
+}
+function addXCNote(moduleName){
+  const ta=document.getElementById('xcNoteInput_'+moduleName);
+  if(!ta) return;
+  const text=ta.value.trim();
+  if(!text){ toast('请输入知识点内容'); return; }
+  const notes=ensureNotes('xcNotes');
+  if(!notes[moduleName]) notes[moduleName]=[];
+  notes[moduleName].unshift({id:Date.now().toString(),text:text,date:new Date().toISOString().split('T')[0]});
+  sv();
+  ta.value='';
+  const listEl=document.getElementById('xcNoteList_'+moduleName);
+  if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'xc',moduleName);
+  toast('已添加 ✓');
+}
+function addSLNote(idx){
+  const ta=document.getElementById('slNoteInput_'+idx);
+  if(!ta) return;
+  const text=ta.value.trim();
+  if(!text){ toast('请输入知识点内容'); return; }
+  const moduleName=slMods[idx].name;
+  const notes=ensureNotes('slNotes');
+  if(!notes[moduleName]) notes[moduleName]=[];
+  notes[moduleName].unshift({id:Date.now().toString(),text:text,date:new Date().toISOString().split('T')[0]});
+  sv();
+  ta.value='';
+  const listEl=document.getElementById('slNoteList_'+idx);
+  if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'sl',idx);
+  toast('已添加 ✓');
+}
+function delNote(prefix,key,id){
+  let field,notes;
+  if(prefix==='xc'){ field='xcNotes'; }
+  else if(prefix==='sl'){ field='slNotes'; }
+  notes=appData[field]||{};
+  // key 对于 xc 是模块名字符串，对于 sl 是索引
+  let moduleName=key;
+  if(prefix==='sl'){ moduleName=slMods[parseInt(key)].name; }
+  if(notes[moduleName]){
+    notes[moduleName]=notes[moduleName].filter(n=>n.id!==id);
+    sv();
+    // 局部刷新对应列表
+    if(prefix==='xc'){
+      const listEl=document.getElementById('xcNoteList_'+moduleName);
+      if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'xc',moduleName);
+    } else {
+      const listEl=document.getElementById('slNoteList_'+key);
+      if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'sl',key);
+    }
+    toast('已删除');
+  }
+}
 
 // ==================== 错题本 ====================
 function renderWB(){
   const pf=document.getElementById('wrongFilterPhase').value,mf=document.getElementById('wrongFilterModule').value,sh=document.getElementById('wrongFilterSearch').value.toLowerCase();
-  let fl=appData.wrongBook||[]; if(pf)fl=fl.filter(w=>w.phase===pf); if(mf)fl=fl.filter(w=>w.module===mf); if(sh)fl=fl.filter(w=>w.question.toLowerCase().includes(sh));
+  let fl=appData.wrongBook||[]; if(pf)fl=fl.filter(w=>w.phase===pf); if(mf)fl=fl.filter(w=>w.module===mf); if(sh)fl=fl.filter(w=>(w.question||'').toLowerCase().includes(sh));
   document.getElementById('wrongBookList').innerHTML=fl.map(w=>{
     const bg=w.phase==='精讲阶段'?'var(--tag-green)':w.phase==='夸夸刷阶段'?'var(--tag-blue)':'var(--tag-orange)';
     const cl=w.phase==='精讲阶段'?'var(--tag-green-text)':w.phase==='夸夸刷阶段'?'var(--tag-blue-text)':'var(--tag-orange-text)';
-    return `<div class="wrong-card"><div class="wrong-card-header"><span class="task-tag" style="background:${bg};color:${cl};">${w.phase}</span><span class="task-tag" style="background:var(--tag-purple);color:var(--tag-purple-text);">${w.module}</span>${w.reviewCount>=3?'<span class="wrong-review-badge r3">三刷</span>':w.reviewCount>=2?'<span class="wrong-review-badge r2">二刷</span>':''}<button class="btn btn-ghost btn-xs" style="margin-left:auto;" onclick="delWrong('${w.id}')">删</button></div><div class="wrong-question">${esc(w.question)}</div><div class="wrong-detail"><strong>错误原因：</strong>${esc(w.reason)}</div><div class="wrong-detail"><strong>正确思路：</strong>${esc(w.solution)}</div><div style="margin-top:6px;"><button class="btn btn-outline btn-xs" onclick="markRev('${w.id}')">标记复习 (${w.reviewCount||1}刷)</button></div></div>`;
+    const imgs=w.images||[];
+    const imgHtml=imgs.length>0?`<div class="wrong-images">${imgs.map((src,fi)=>`<img class="wrong-img-thumb" src="${src}" onclick="showFullImg('${w.id}',${fi})">`).join('')}</div>`:'';
+    const questionHtml=w.question?`<div class="wrong-question">${esc(w.question)}</div>`:(imgs.length>0?'<div class="wrong-question" style="color:var(--text-light);font-style:italic;">📷 图片题</div>':'');
+    return `<div class="wrong-card"><div class="wrong-card-header"><span class="task-tag" style="background:${bg};color:${cl};">${w.phase}</span><span class="task-tag" style="background:var(--tag-purple);color:var(--tag-purple-text);">${w.module}</span>${w.reviewCount>=3?'<span class="wrong-review-badge r3">三刷</span>':w.reviewCount>=2?'<span class="wrong-review-badge r2">二刷</span>':''}<button class="btn btn-ghost btn-xs" style="margin-left:auto;" onclick="delWrong('${w.id}')">删</button></div>${questionHtml}${imgHtml}${w.reason?`<div class="wrong-detail"><strong>错误原因：</strong>${esc(w.reason)}</div>`:''}${w.solution?`<div class="wrong-detail"><strong>正确思路：</strong>${esc(w.solution)}</div>`:''}<div style="margin-top:6px;"><button class="btn btn-outline btn-xs" onclick="markRev('${w.id}')">标记复习 (${w.reviewCount||1}刷)</button></div></div>`;
   }).join('');
 }
-function openWrongModal(){ document.getElementById('wrongModal').classList.add('show'); }
+function showFullImg(wid,fi){
+  const w=(appData.wrongBook||[]).find(w=>w.id===wid);
+  if(w&&w.images&&w.images[fi]){
+    document.getElementById('imgFullSrc').src=w.images[fi];
+    document.getElementById('imgFullOverlay').classList.add('show');
+  }
+}
+// ---- 错题图片上传（弹窗内临时存储）----
+let _wrongTempImages=[];
+function openWrongModal(){
+  _wrongTempImages=[];
+  document.getElementById('wrongImgPreview').innerHTML='';
+  document.getElementById('wrongImgPlaceholder').style.display='block';
+  document.getElementById('wrongImgUploadArea').classList.remove('has-imgs');
+  document.getElementById('wrongModal').classList.add('show');
+}
 function closeWrongModal(){ document.getElementById('wrongModal').classList.remove('show'); }
+function handleWrongImages(input){
+  const files=input.files;
+  if(!files||files.length===0) return;
+  let remaining=files.length;
+  for(let i=0;i<files.length;i++){
+    const file=files[i];
+    if(!file.type.startsWith('image/')){ remaining--; continue; }
+    // 压缩图片到合理大小，避免 localStorage 溢出
+    compressImage(file,800,0.7,function(dataUrl){
+      _wrongTempImages.push(dataUrl);
+      remaining--;
+      if(remaining===0) renderWrongImgPreview();
+    });
+  }
+  if(files.length===0) renderWrongImgPreview();
+}
+function compressImage(file,maxSize,quality,callback){
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const img=new Image();
+    img.onload=function(){
+      let w=img.width,h=img.height;
+      if(w>h){ if(w>maxSize){ h=Math.round(h*maxSize/w); w=maxSize; } }
+      else { if(h>maxSize){ w=Math.round(w*maxSize/h); h=maxSize; } }
+      const canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      callback(canvas.toDataURL('image/jpeg',quality));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function renderWrongImgPreview(){
+  const previewEl=document.getElementById('wrongImgPreview');
+  const placeholderEl=document.getElementById('wrongImgPlaceholder');
+  const areaEl=document.getElementById('wrongImgUploadArea');
+  if(_wrongTempImages.length===0){
+    previewEl.innerHTML='';
+    placeholderEl.style.display='block';
+    areaEl.classList.remove('has-imgs');
+  } else {
+    placeholderEl.style.display='none';
+    areaEl.classList.add('has-imgs');
+    previewEl.innerHTML=_wrongTempImages.map((src,i)=>`<div class="img-upload-preview-item"><img src="${src}"><button class="remove-img" onclick="removeWrongTempImg(${i})">✕</button></div>`).join('');
+  }
+}
+function removeWrongTempImg(idx){
+  _wrongTempImages.splice(idx,1);
+  renderWrongImgPreview();
+}
 function saveWrong(){
-  const w={id:Date.now().toString(),question:document.getElementById('wrongQuestionInput').value.trim(),phase:document.getElementById('wrongPhaseInput').value,module:document.getElementById('wrongModuleInput').value,reason:document.getElementById('wrongReasonInput').value.trim(),solution:document.getElementById('wrongSolutionInput').value.trim(),reviewCount:1,date:new Date().toISOString().split('T')[0]};
-  if(!w.question) return; if(!appData.wrongBook)appData.wrongBook=[]; appData.wrongBook.unshift(w); sv(); closeWrongModal(); renderWB();
+  const question=document.getElementById('wrongQuestionInput').value.trim();
+  const images=[..._wrongTempImages];
+  // 如果既没有题目文字也没有图片，不允许保存
+  if(!question && images.length===0){ toast('请输入题目内容或上传图片'); return; }
+  const w={id:Date.now().toString(),question:question,phase:document.getElementById('wrongPhaseInput').value,module:document.getElementById('wrongModuleInput').value,reason:document.getElementById('wrongReasonInput').value.trim(),solution:document.getElementById('wrongSolutionInput').value.trim(),reviewCount:1,date:new Date().toISOString().split('T')[0]};
+  if(images.length>0) w.images=images;
+  if(!appData.wrongBook)appData.wrongBook=[]; appData.wrongBook.unshift(w); sv(); closeWrongModal(); renderWB();
+  // 重置表单
+  document.getElementById('wrongQuestionInput').value='';
+  document.getElementById('wrongReasonInput').value='';
+  document.getElementById('wrongSolutionInput').value='';
+  _wrongTempImages=[];
 }
 function delWrong(id){ appData.wrongBook=(appData.wrongBook||[]).filter(w=>w.id!==id); sv(); renderWB(); }
 function markRev(id){ const w=(appData.wrongBook||[]).find(w=>w.id===id); if(w){w.reviewCount=(w.reviewCount||1)+1;sv();renderWB();} }
@@ -1758,6 +2011,21 @@ function confirmImport(mode) {
         const bkObj = backup[f] || {};
         Object.keys(bkObj).forEach(k => {
           if (!curObj[k]) curObj[k] = bkObj[k];
+        });
+        current[f] = curObj;
+      });
+      // 合并知识库笔记（xcNotes / slNotes，按科目模块合并，去重靠 id）
+      ['xcNotes','slNotes'].forEach(f => {
+        const curObj = current[f] || {};
+        const bkObj = backup[f] || {};
+        Object.keys(bkObj).forEach(moduleName => {
+          const curNotes = curObj[moduleName] || [];
+          const bkNotes = bkObj[moduleName] || [];
+          const curIds = new Set(curNotes.map(n => n.id));
+          bkNotes.forEach(n => {
+            if (!curIds.has(n.id)) curNotes.push(n);
+          });
+          curObj[moduleName] = curNotes;
         });
         current[f] = curObj;
       });
