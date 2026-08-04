@@ -757,6 +757,28 @@ body {
   border: 1px dashed var(--olive-light);
 }
 
+/* 标签重命名编辑态 */
+.tag-chip.renaming {
+  background: var(--white); border: 1.5px solid var(--olive);
+  padding: 2px 4px 2px 8px;
+}
+.tag-chip.renaming input {
+  border: none; outline: none; font-size: 12px; width: 80px;
+  color: var(--olive-dark); background: transparent; padding: 3px 0;
+  font-weight: 600;
+}
+.tag-chip .tag-rename-btn {
+  font-size: 10px; color: var(--olive-light); cursor: pointer; padding: 0 2px;
+  background: none; border: none; margin-left: 2px;
+  -webkit-tap-highlight-color: transparent;
+}
+.tag-chip .tag-rename-btn:active { color: var(--olive); }
+.tag-chip .tag-rename-ok {
+  font-size: 11px; color: var(--olive); cursor: pointer; padding: 0 3px;
+  background: var(--olive-pale); border: none; border-radius: 6px;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* 展开/收起 按钮 */
 .expand-toggle {
   display: block; width: 100%; text-align: center;
@@ -1202,6 +1224,8 @@ body {
     <div id="noteTagCurrent" style="min-height:32px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:10px;"></div>
     <label>点击选择/取消标签</label>
     <div class="tag-picker" id="noteTagAll" style="min-height:60px;"></div>
+    <label style="margin-top:10px;">✏️ 重命名标签（点击标签旁的"改"按钮）</label>
+    <div class="tag-picker" id="noteTagRename" style="min-height:40px;"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeNoteTagModal()">取消</button>
       <button class="btn btn-primary" onclick="saveNoteTags()">保存</button>
@@ -1217,6 +1241,8 @@ body {
     <div id="wrongTagCurrent" style="min-height:32px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:10px;"></div>
     <label>点击选择/取消标签</label>
     <div class="tag-picker" id="wrongTagAll" style="min-height:60px;"></div>
+    <label style="margin-top:10px;">✏️ 重命名标签（点击标签旁的"改"按钮）</label>
+    <div class="tag-picker" id="wrongTagRename" style="min-height:40px;"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeWrongTagModal()">取消</button>
       <button class="btn btn-primary" onclick="saveWrongTags()">保存</button>
@@ -2079,7 +2105,86 @@ function openNoteTagEditor(prefix,key,id){
   const overlay = document.getElementById('noteTagModal');
   document.getElementById('noteTagCurrent').innerHTML = currentHtml || '<span style="font-size:12px;color:var(--text-light);">暂无标签</span>';
   document.getElementById('noteTagAll').innerHTML = allTagsHtml + `<span class="tag-chip-editable"><input type="text" id="noteTagNewInput" placeholder="+自定义标签" onkeypress="if(event.key==='Enter'){event.preventDefault();addEditTagCustom();}"><button class="tag-edit-btn" onclick="addEditTagCustom()">＋</button></span>`;
+  // 渲染重命名区域：每个标签旁有"改"按钮
+  renderNoteTagRenameArea(tagList,prefix,moduleName);
   overlay.classList.add('show');
+}
+// 渲染笔记标签重命名区域
+function renderNoteTagRenameArea(tagList,prefix,moduleName){
+  const container=document.getElementById('noteTagRename');
+  if(!container) return;
+  if(tagList.length===0){
+    container.innerHTML='<span style="font-size:12px;color:var(--text-light);">暂无可重命名的标签</span>';
+    return;
+  }
+  container.innerHTML=tagList.map((t,idx)=>`<span class="tag-chip" data-tag="${esc(t)}" data-idx="${idx}">${esc(t)}<button class="tag-rename-btn" onclick="startNoteTagRename(${idx})">改</button></span>`).join('');
+}
+// 开始重命名某个标签（将 chip 变成输入框）
+function startNoteTagRename(idx){
+  const container=document.getElementById('noteTagRename');
+  if(!container) return;
+  const chips=container.querySelectorAll('.tag-chip');
+  const chip=chips[idx];
+  if(!chip) return;
+  const oldTag=chip.dataset.tag;
+  // 替换为输入框 + 确认按钮
+  const span=document.createElement('span');
+  span.className='tag-chip renaming';
+  span.dataset.tag=oldTag;
+  span.dataset.idx=idx;
+  span.innerHTML=`<input type="text" value="${esc(oldTag)}" id="noteTagRenameInput_${idx}" onkeypress="if(event.key==='Enter'){event.preventDefault();confirmNoteTagRename(${idx}, '${esc(oldTag)}');}"><button class="tag-rename-ok" onclick="confirmNoteTagRename(${idx}, '${esc(oldTag)}')">✓</button>`;
+  chip.replaceWith(span);
+  const inp=document.getElementById('noteTagRenameInput_'+idx);
+  if(inp){ inp.focus(); inp.select(); }
+}
+// 确认重命名：更新标签库和所有笔记中的该标签
+function confirmNoteTagRename(idx,oldTag){
+  if(!_noteTagEditCtx) return;
+  const {prefix,key}=_noteTagEditCtx;
+  let field,moduleName;
+  if(prefix==='xc'){ field='xcNotes'; moduleName=key; }
+  else { field='slNotes'; moduleName=slMods[parseInt(key)].name; }
+  const inp=document.getElementById('noteTagRenameInput_'+idx);
+  if(!inp) return;
+  const newTag=inp.value.trim();
+  if(!newTag){ toast('标签名不能为空'); return; }
+  if(newTag===oldTag){ // 未改名，恢复
+    const tagList=getModuleTags(prefix,moduleName,(prefix==='xc'?(xcMods.find(x=>x.name===moduleName)||{tags:[]}).tags:(slMods[parseInt(key)]||{tags:[]}).tags));
+    renderNoteTagRenameArea(tagList,prefix,moduleName);
+    return;
+  }
+  // 检查重名
+  const tagStoreField=field.replace('Notes','Tags');
+  const tagStore=appData[tagStoreField]||{};
+  const allTags=tagStore[moduleName]||[];
+  const defaultTags=(prefix==='xc'?(xcMods.find(x=>x.name===moduleName)||{tags:[]}).tags:(slMods[parseInt(key)]||{tags:[]}).tags);
+  const fullTagList=(tagStore[moduleName]&&tagStore[moduleName].length>0)?tagStore[moduleName]:defaultTags.slice();
+  if(fullTagList.includes(newTag)){ toast('已存在同名标签'); return; }
+  // 更新标签库
+  const tagIdx=fullTagList.indexOf(oldTag);
+  if(tagIdx>=0) fullTagList[tagIdx]=newTag;
+  if(!appData[tagStoreField]) appData[tagStoreField]={};
+  appData[tagStoreField][moduleName]=fullTagList;
+  // 更新该模块所有笔记中的该标签
+  const notes=appData[field]||{};
+  const arr=notes[moduleName]||[];
+  arr.forEach(n=>{
+    if(n.tags && n.tags.includes(oldTag)){
+      n.tags=n.tags.map(t=>t===oldTag?newTag:t);
+    }
+  });
+  // 同步更新全部可选标签区
+  const allContainer=document.getElementById('noteTagAll');
+  if(allContainer){
+    allContainer.querySelectorAll('.tag-chip').forEach(c=>{
+      if(c.dataset.tag===oldTag){ c.dataset.tag=newTag; c.textContent=newTag; }
+    });
+  }
+  sv();
+  // 刷新重命名区域和当前标签展示
+  renderNoteTagRenameArea(fullTagList,prefix,moduleName);
+  refreshNoteTagCurrent();
+  toast('标签已重命名 ✓');
 }
 function toggleEditTagChip(el){
   el.classList.toggle('selected');
@@ -2348,7 +2453,72 @@ function openWrongTagEditor(id){
   const overlay = document.getElementById('wrongTagModal');
   document.getElementById('wrongTagCurrent').innerHTML = currentHtml || '<span style="font-size:12px;color:var(--text-light);">暂无标签</span>';
   document.getElementById('wrongTagAll').innerHTML = allTagsHtml + `<span class="tag-chip-editable"><input type="text" id="wrongTagNewInput2" placeholder="+自定义标签" onkeypress="if(event.key==='Enter'){event.preventDefault();addWrongEditCustom();}"><button class="tag-edit-btn" onclick="addWrongEditCustom()">＋</button></span>`;
+  // 渲染重命名区域
+  renderWrongTagRenameArea(allTags);
   overlay.classList.add('show');
+}
+// 渲染错题标签重命名区域
+function renderWrongTagRenameArea(tagList){
+  const container=document.getElementById('wrongTagRename');
+  if(!container) return;
+  if(tagList.length===0){
+    container.innerHTML='<span style="font-size:12px;color:var(--text-light);">暂无可重命名的标签</span>';
+    return;
+  }
+  container.innerHTML=tagList.map((t,idx)=>`<span class="tag-chip" data-tag="${esc(t)}" data-idx="${idx}">${esc(t)}<button class="tag-rename-btn" onclick="startWrongTagRename(${idx})">改</button></span>`).join('');
+}
+// 开始重命名错题标签
+function startWrongTagRename(idx){
+  const container=document.getElementById('wrongTagRename');
+  if(!container) return;
+  const chips=container.querySelectorAll('.tag-chip');
+  const chip=chips[idx];
+  if(!chip) return;
+  const oldTag=chip.dataset.tag;
+  const span=document.createElement('span');
+  span.className='tag-chip renaming';
+  span.dataset.tag=oldTag;
+  span.dataset.idx=idx;
+  span.innerHTML=`<input type="text" value="${esc(oldTag)}" id="wrongTagRenameInput_${idx}" onkeypress="if(event.key==='Enter'){event.preventDefault();confirmWrongTagRename(${idx}, '${esc(oldTag)}');}"><button class="tag-rename-ok" onclick="confirmWrongTagRename(${idx}, '${esc(oldTag)}')">✓</button>`;
+  chip.replaceWith(span);
+  const inp=document.getElementById('wrongTagRenameInput_'+idx);
+  if(inp){ inp.focus(); inp.select(); }
+}
+// 确认重命名错题标签：更新标签库和所有错题中的该标签
+function confirmWrongTagRename(idx,oldTag){
+  const inp=document.getElementById('wrongTagRenameInput_'+idx);
+  if(!inp) return;
+  const newTag=inp.value.trim();
+  if(!newTag){ toast('标签名不能为空'); return; }
+  if(newTag===oldTag){
+    const wbTags=appData.wbTags||['高频考点','易错陷阱','公式技巧','广东特色','需二刷','已掌握'];
+    renderWrongTagRenameArea(wbTags);
+    return;
+  }
+  // 检查重名
+  if((appData.wbTags||[]).includes(newTag)){ toast('已存在同名标签'); return; }
+  // 更新标签库
+  if(!appData.wbTags) appData.wbTags=[];
+  const tagIdx=appData.wbTags.indexOf(oldTag);
+  if(tagIdx>=0) appData.wbTags[tagIdx]=newTag;
+  // 更新所有错题中的该标签
+  (appData.wrongBook||[]).forEach(w=>{
+    if(w.tags && w.tags.includes(oldTag)){
+      w.tags=w.tags.map(t=>t===oldTag?newTag:t);
+    }
+  });
+  // 同步更新全部可选标签区
+  const allContainer=document.getElementById('wrongTagAll');
+  if(allContainer){
+    allContainer.querySelectorAll('.tag-chip').forEach(c=>{
+      if(c.dataset.tag===oldTag){ c.dataset.tag=newTag; c.textContent=newTag; }
+    });
+  }
+  sv();
+  // 刷新重命名区域和当前标签展示
+  renderWrongTagRenameArea(appData.wbTags);
+  refreshWrongTagCurrent();
+  toast('标签已重命名 ✓');
 }
 function removeWrongEditTag(tag){
   const chips=document.querySelectorAll('#wrongTagAll .tag-chip');
