@@ -699,6 +699,81 @@ body {
 
 /* ===== 双列网格（仅限大屏手机横屏，默认堆叠） ===== */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ===== 笔记/错题 标签选择器 ===== */
+.tag-picker {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 8px;
+  padding: 8px; background: #FAFAF8; border-radius: var(--radius-xs);
+  border: 1px dashed var(--border);
+}
+.tag-chip {
+  padding: 5px 12px; border-radius: 14px; font-size: 12px;
+  font-weight: 500; cursor: pointer; user-select: none;
+  background: var(--white); border: 1.5px solid var(--border);
+  color: var(--text-secondary); transition: var(--transition);
+  display: inline-flex; align-items: center; gap: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+.tag-chip:active { transform: scale(0.95); }
+.tag-chip.selected {
+  background: var(--olive-pale); border-color: var(--olive);
+  color: var(--olive-dark); font-weight: 600;
+}
+.tag-chip-editable {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: var(--white); border: 1.5px dashed var(--olive-light);
+  border-radius: 14px; padding: 4px 10px; font-size: 12px;
+  color: var(--olive); cursor: pointer;
+}
+.tag-chip-editable input {
+  border: none; outline: none; font-size: 12px; width: 70px;
+  color: var(--olive-dark); background: transparent; padding: 0;
+}
+.tag-chip-editable .tag-edit-actions { display: flex; gap: 2px; }
+.tag-chip-editable .tag-edit-btn {
+  font-size: 11px; color: var(--olive); cursor: pointer; padding: 0 2px;
+  background: none; border: none;
+}
+.tag-chip-editable .tag-edit-btn.del { color: #C62828; }
+
+/* 笔记卡片上的标签展示 */
+.note-card-tags, .wrong-card-tags {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+}
+.note-card-tag, .wrong-card-tag {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  font-weight: 500; white-space: nowrap;
+  background: var(--tag-green); color: var(--tag-green-text);
+  display: inline-flex; align-items: center; gap: 3px;
+}
+.note-card-tag .tag-x, .wrong-card-tag .tag-x {
+  font-size: 10px; cursor: pointer; opacity: 0.6;
+}
+.note-card-tag .tag-x:active, .wrong-card-tag .tag-x:active { opacity: 1; }
+.note-card-tag.edit-btn, .wrong-card-tag.edit-btn {
+  background: var(--olive-bg); color: var(--olive); cursor: pointer;
+  border: 1px dashed var(--olive-light);
+}
+
+/* 展开/收起 按钮 */
+.expand-toggle {
+  display: block; width: 100%; text-align: center;
+  padding: 8px; margin-top: 6px;
+  font-size: 12px; font-weight: 600; color: var(--olive);
+  background: var(--olive-bg); border: none; border-radius: var(--radius-xs);
+  cursor: pointer; transition: var(--transition);
+}
+.expand-toggle:active { background: var(--olive-pale); }
+
+/* 错题标签筛选条 */
+.wb-tag-filter {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;
+  align-items: center;
+}
+.wb-tag-filter .wb-tf-label {
+  font-size: 11px; color: var(--text-light); margin-right: 2px;
+}
+.wb-tag-filter .tag-chip { font-size: 11px; padding: 4px 10px; }
 </style>
 </head>
 <body>
@@ -911,7 +986,7 @@ body {
     <div class="card">
       <div class="card-header">
         <div class="card-title"><span class="icon">❌</span> 错题本</div>
-        <button class="btn btn-primary btn-sm" onclick="openWrongModal()">+ 录入</button>
+        <span style="display:flex;align-items:center;gap:8px;"><span id="wrongBookCount" style="font-size:11px;color:var(--text-light);">共 0 道</span><button class="btn btn-primary btn-sm" onclick="openWrongModal()">+ 录入</button></span>
       </div>
       <div class="wrong-filter-row">
         <select id="wrongFilterPhase" onchange="renderWB()" style="flex:1;min-width:80px;">
@@ -934,6 +1009,7 @@ body {
         </select>
       </div>
       <input type="text" id="wrongFilterSearch" placeholder="🔍 搜索题目..." oninput="renderWB()" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;outline:none;margin-bottom:10px;">
+      <div class="wb-tag-filter" id="wbTagFilterBar"></div>
       <div id="wrongBookList"></div>
     </div>
   </div>
@@ -1094,6 +1170,8 @@ body {
     <textarea id="wrongReasonInput" placeholder="分析错误原因..."></textarea>
     <label>正确解题思路</label>
     <textarea id="wrongSolutionInput" placeholder="正确解法..."></textarea>
+    <label>🏷️ 标签标记（可选，可多选）</label>
+    <div class="tag-picker" id="wrongTagPicker"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeWrongModal()">取消</button>
       <button class="btn btn-primary" onclick="saveWrong()">保存</button>
@@ -1104,6 +1182,36 @@ body {
 <!-- ===== 图片全屏查看 ===== -->
 <div class="wrong-img-full-overlay" id="imgFullOverlay" onclick="this.classList.remove('show')">
   <img id="imgFullSrc" src="">
+</div>
+
+<!-- ===== 弹窗：笔记标签编辑器 ===== -->
+<div class="modal-overlay" id="noteTagModal">
+  <div class="modal">
+    <div class="modal-title">🏷️ 编辑笔记标签</div>
+    <label>当前标签</label>
+    <div id="noteTagCurrent" style="min-height:32px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:10px;"></div>
+    <label>点击选择/取消标签</label>
+    <div class="tag-picker" id="noteTagAll" style="min-height:60px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeNoteTagModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveNoteTags()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 弹窗：错题标签编辑器 ===== -->
+<div class="modal-overlay" id="wrongTagModal">
+  <div class="modal">
+    <div class="modal-title">🏷️ 编辑错题标签</div>
+    <label>当前标签</label>
+    <div id="wrongTagCurrent" style="min-height:32px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:10px;"></div>
+    <label>点击选择/取消标签</label>
+    <div class="tag-picker" id="wrongTagAll" style="min-height:60px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeWrongTagModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveWrongTags()">保存</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== 弹窗：导入确认 ===== -->
@@ -1159,7 +1267,11 @@ function def() {
     p3: buildEmptySubjects(),
     // 知识库笔记（行测/申论，按科目模块分组）
     xcNotes: {},
-    slNotes: {}
+    slNotes: {},
+    // 标签库（可选字段，用户可自定义增删改）
+    xcTags: {},
+    slTags: {},
+    wbTags: ['高频考点','易错陷阱','公式技巧','广东特色','需二刷','已掌握']
   };
 }
 function buildEmptySubjects() {
@@ -1424,6 +1536,10 @@ appData.p3 = migratePhaseData(appData.p3 || []);
 // 兼容旧数据：确保笔记字段存在（不修改已有存储结构，仅补充新字段）
 if(!appData.xcNotes) appData.xcNotes = {};
 if(!appData.slNotes) appData.slNotes = {};
+// 兼容旧数据：确保标签库字段存在（新增可选字段，旧数据自动补默认值，不破坏已有存储）
+if(!appData.xcTags) appData.xcTags = {};
+if(!appData.slTags) appData.slTags = {};
+if(!appData.wbTags) appData.wbTags = ['高频考点','易错陷阱','公式技巧','广东特色','需二刷','已掌握'];
 // 填充精讲/夸夸刷默认课表（不覆盖已有进度）
 seedJingJiang();
 seedKuaKuaShua();
@@ -1685,23 +1801,142 @@ const xcMods=[
   {name:'常识',icon:'💡',desc:'政治、法律、经济、人文、科技',tags:['时政热点','法律常识','文史知识','广东省情']},
   {name:'申论',icon:'📝',desc:'归纳概括、综合分析、提出对策、应用文、大作文',tags:['归纳概括','综合分析','应用文','大作文']}
 ];
+// 行测每个模块的折叠展开状态（true=展开全部知识点）
+const xcExpandState = {};
+
 function renderXC(){
   const notes=appData.xcNotes||{};
   document.getElementById('xingceModules').innerHTML=
-    xcMods.map((m,i)=>`<div class="accordion" id="xcAcc${i}"><div class="accordion-header" onclick="tgAcc('xcAcc${i}')"><span>${m.icon} ${m.name}</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><div class="note-section"><div class="note-section-title">📝 我的笔记</div><div class="note-add-row"><textarea id="xcNoteInput_${m.name}" placeholder="记录这个模块的知识点、技巧..."></textarea></div><button class="btn btn-primary btn-xs btn-block" onclick="addXCNote('${m.name}')">+ 添加知识点</button><div id="xcNoteList_${m.name}" style="margin-top:8px;">${renderNoteList(notes[m.name]||[],"xc",m.name)}</div></div></div></div></div>`).join('');
+    xcMods.map((m,i)=>{
+      const tagList=getModuleTags('xc',m.name,m.tags);
+      const noteArr=notes[m.name]||[];
+      const cnt=noteArr.length;
+      return `<div class="accordion" id="xcAcc${i}"><div class="accordion-header" onclick="tgAcc('xcAcc${i}')"><span>${m.icon} ${m.name}</span><span class="acc-count" style="font-size:11px;color:var(--text-light);margin-left:auto;margin-right:8px;">${cnt}条</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><div class="note-section"><div class="note-section-title">📝 我的笔记 <span style="font-size:11px;color:var(--text-light);font-weight:400;">（可选标签 · 下拉查看全部）</span></div><div class="note-add-row"><textarea id="xcNoteInput_${m.name}" placeholder="记录这个模块的知识点、技巧..."></textarea></div><div class="tag-picker" id="xcTagPicker_${m.name}">${renderTagPicker(tagList,'xc',m.name)}</div><button class="btn btn-primary btn-xs btn-block" onclick="addXCNote('${m.name}')">+ 添加知识点</button><div id="xcNoteList_${m.name}" style="margin-top:8px;">${renderNoteList(noteArr,"xc",m.name,xcExpandState[m.name])}</div></div></div></div></div>`;
+    }).join('');
 }
 const slMods=[{name:'基础题型框架',icon:'📋',desc:'概括归纳、综合分析、提出对策、贯彻执行',tags:['概括题','分析题','对策题','公文题']},{name:'应用文格式大全',icon:'📄',desc:'通知、报告、倡议书、讲话稿、调研报告',tags:['法定公文','事务文书','格式规范']},{name:'大作文素材库',icon:'✍️',desc:'开头模板、论证方法、结尾金句、热点素材',tags:['开头结尾','论证结构','名言金句','案例素材']},{name:'广东申论阅卷注意事项',icon:'⚠️',desc:'阅卷标准、常见失分点、高分特征',tags:['阅卷规则','评分标准','广东命题特点']}];
+// 申论每个板块的折叠展开状态
+const slExpandState = {};
+
 function renderSL(){
   const notes=appData.slNotes||{};
   document.getElementById('shenlunModules').innerHTML=
-    slMods.map((m,i)=>`<div class="accordion" id="slAcc${i}"><div class="accordion-header" onclick="tgAcc('slAcc${i}')"><span>${m.icon} ${m.name}</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><div class="note-section"><div class="note-section-title">📝 我的笔记</div><div class="note-add-row"><textarea id="slNoteInput_${i}" placeholder="记录这个板块的知识点、素材..."></textarea></div><button class="btn btn-primary btn-xs btn-block" onclick="addSLNote(${i})">+ 添加知识点</button><div id="slNoteList_${i}" style="margin-top:8px;">${renderNoteList(notes[m.name]||[],"sl",i)}</div></div></div></div></div>`).join('');
+    slMods.map((m,i)=>{
+      const tagList=getModuleTags('sl',m.name,m.tags);
+      const noteArr=notes[m.name]||[];
+      const cnt=noteArr.length;
+      return `<div class="accordion" id="slAcc${i}"><div class="accordion-header" onclick="tgAcc('slAcc${i}')"><span>${m.icon} ${m.name}</span><span class="acc-count" style="font-size:11px;color:var(--text-light);margin-left:auto;margin-right:8px;">${cnt}条</span><span class="accordion-arrow">▼</span></div><div class="accordion-body"><div class="accordion-body-inner"><p>${m.desc}</p><div class="knowledge-tags">${m.tags.map(t=>`<span class="knowledge-tag">${t}</span>`).join('')}</div><div class="note-section"><div class="note-section-title">📝 我的笔记 <span style="font-size:11px;color:var(--text-light);font-weight:400;">（可选标签 · 下拉查看全部）</span></div><div class="note-add-row"><textarea id="slNoteInput_${i}" placeholder="记录这个板块的知识点、素材..."></textarea></div><div class="tag-picker" id="slTagPicker_${i}">${renderTagPicker(tagList,'sl',i)}</div><button class="btn btn-primary btn-xs btn-block" onclick="addSLNote(${i})">+ 添加知识点</button><div id="slNoteList_${i}" style="margin-top:8px;">${renderNoteList(noteArr,"sl",i,slExpandState[i])}</div></div></div></div></div>`;
+    }).join('');
 }
 function tgAcc(id){ document.getElementById(id).classList.toggle('open'); }
 
+// ---- 标签库管理 ----
+// 获取某模块的标签列表：优先用户自定义，否则用模块默认标签
+function getModuleTags(prefix,moduleName,defaultTags){
+  const field = prefix==='xc'?'xcTags':'slTags';
+  const tagStore = appData[field]||{};
+  if(tagStore[moduleName] && Array.isArray(tagStore[moduleName])){
+    return tagStore[moduleName];
+  }
+  return defaultTags.slice();
+}
+// 渲染标签选择器（添加笔记时用，可多选 / 自定义新增 / 编辑删除）
+function renderTagPicker(tagList,prefix,key){
+  const idPrefix = prefix+'TagChip_'+key;
+  let html = tagList.map((t,idx)=>`<span class="tag-chip" id="${idPrefix}_${idx}" data-tag="${esc(t)}" onclick="toggleTagChip(this,'${prefix}','${key}')">${esc(t)}</span>`).join('');
+  // 自定义新增标签输入框
+  html += `<span class="tag-chip-editable"><input type="text" id="${idPrefix}_newInput" placeholder="+自定义标签" onkeypress="if(event.key==='Enter'){event.preventDefault();addCustomTag('${prefix}','${key}');}"><button class="tag-edit-btn" onclick="addCustomTag('${prefix}','${key}')">＋</button></span>`;
+  return html;
+}
+// 切换标签选中态（仅视觉，保存笔记时读取选中态）
+function toggleTagChip(el,prefix,key){
+  el.classList.toggle('selected');
+}
+// 新增自定义标签到标签库（持久化）
+function addCustomTag(prefix,key){
+  const inputId = prefix+'TagChip_'+key+'_newInput';
+  const inp = document.getElementById(inputId);
+  if(!inp) return;
+  const val = inp.value.trim();
+  if(!val) return;
+  const field = prefix==='xc'?'xcTags':'slTags';
+  if(!appData[field]) appData[field]={};
+  let moduleName=key;
+  if(prefix==='sl'){ moduleName=slMods[parseInt(key)].name; }
+  if(!appData[field][moduleName]) appData[field][moduleName]=[];
+  if(appData[field][moduleName].includes(val)){ toast('标签已存在'); return; }
+  appData[field][moduleName].push(val);
+  sv();
+  inp.value='';
+  // 刷新标签选择器（保留当前已选中的标签）
+  const selectedTags = collectSelectedTags(prefix,key);
+  refreshTagPicker(prefix,key,selectedTags);
+}
+// 刷新标签选择器并恢复选中态
+function refreshTagPicker(prefix,key,selectedTags){
+  let moduleName=key, defaultTags=[];
+  if(prefix==='xc'){
+    const m = xcMods.find(x=>x.name===key);
+    if(m) defaultTags=m.tags;
+  } else {
+    const m = slMods[parseInt(key)];
+    if(m) defaultTags=m.tags; moduleName=m.name;
+  }
+  const tagList = getModuleTags(prefix,moduleName,defaultTags);
+  const pickerId = prefix+'TagPicker_'+key;
+  const picker = document.getElementById(pickerId);
+  if(picker) picker.innerHTML = renderTagPicker(tagList,prefix,key);
+  // 恢复选中态
+  if(selectedTags && selectedTags.length){
+    selectedTags.forEach(t=>{
+      const chips = document.querySelectorAll('#'+pickerId+' .tag-chip');
+      chips.forEach(c=>{ if(c.dataset.tag===t) c.classList.add('selected'); });
+    });
+  }
+}
+// 收集当前标签选择器中已选中的标签
+function collectSelectedTags(prefix,key){
+  const pickerId = prefix+'TagPicker_'+key;
+  const picker = document.getElementById(pickerId);
+  if(!picker) return [];
+  return Array.from(picker.querySelectorAll('.tag-chip.selected')).map(c=>c.dataset.tag);
+}
+
 // ---- 知识库笔记：通用渲染与操作 ----
-function renderNoteList(arr,prefix,key){
+const NOTE_COLLAPSE_LIMIT = 3; // 折叠时最多显示条数
+function renderNoteList(arr,prefix,key,expanded){
   if(!arr||arr.length===0) return '<div class="note-empty">暂无笔记，点击上方添加</div>';
-  return arr.map(n=>`<div class="note-card"><button class="note-del-btn" onclick="delNote('${prefix}','${key}','${n.id}')">✕</button>${esc(n.text)}<div class="note-card-meta">${n.date}</div></div>`).join('');
+  const list = expanded ? arr : arr.slice(0,NOTE_COLLAPSE_LIMIT);
+  let html = list.map(n=>renderSingleNote(n,prefix,key)).join('');
+  // 超过限制条数时显示展开/收起按钮
+  if(arr.length>NOTE_COLLAPSE_LIMIT){
+    html += `<button class="expand-toggle" onclick="toggleNoteExpand('${prefix}','${key}')">${expanded?'收起 ▲':'展开全部 '+arr.length+' 条 ▼'}</button>`;
+  }
+  return html;
+}
+function renderSingleNote(n,prefix,key){
+  const tags = n.tags||[];
+  let tagHtml = '';
+  if(tags.length>0){
+    tagHtml = '<div class="note-card-tags">'+tags.map(t=>`<span class="note-card-tag">${esc(t)}</span>`).join('')+'</div>';
+  }
+  return `<div class="note-card"><button class="note-del-btn" onclick="delNote('${prefix}','${key}','${n.id}')">✕</button>${esc(n.text)}${tagHtml}<div class="note-card-meta">${n.date} · <span style="color:var(--olive);cursor:pointer;" onclick="openNoteTagEditor('${prefix}','${key}','${n.id}')">编辑标签</span></div></div>`;
+}
+// 展开/收起笔记列表
+function toggleNoteExpand(prefix,key){
+  if(prefix==='xc'){
+    xcExpandState[key] = !xcExpandState[key];
+    const notes=appData.xcNotes||{};
+    const listEl=document.getElementById('xcNoteList_'+key);
+    if(listEl) listEl.innerHTML=renderNoteList(notes[key]||[],'xc',key,xcExpandState[key]);
+  } else {
+    const idx=parseInt(key);
+    slExpandState[idx] = !slExpandState[idx];
+    const notes=appData.slNotes||{};
+    const moduleName=slMods[idx].name;
+    const listEl=document.getElementById('slNoteList_'+idx);
+    if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName]||[],'sl',idx,slExpandState[idx]);
+  }
 }
 function ensureNotes(field){
   if(!appData[field]) appData[field]={};
@@ -1714,11 +1949,18 @@ function addXCNote(moduleName){
   if(!text){ toast('请输入知识点内容'); return; }
   const notes=ensureNotes('xcNotes');
   if(!notes[moduleName]) notes[moduleName]=[];
-  notes[moduleName].unshift({id:Date.now().toString(),text:text,date:new Date().toISOString().split('T')[0]});
+  const selectedTags = collectSelectedTags('xc',moduleName);
+  notes[moduleName].unshift({id:Date.now().toString(),text:text,date:new Date().toISOString().split('T')[0],tags:selectedTags});
   sv();
   ta.value='';
+  // 清空标签选中态
+  const picker=document.getElementById('xcTagPicker_'+moduleName);
+  if(picker) picker.querySelectorAll('.tag-chip.selected').forEach(c=>c.classList.remove('selected'));
   const listEl=document.getElementById('xcNoteList_'+moduleName);
-  if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'xc',moduleName);
+  if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'xc',moduleName,xcExpandState[moduleName]);
+  // 同步更新模块头部计数
+  const countEl = document.querySelector(`#xcAcc${xcMods.findIndex(m=>m.name===moduleName)} .acc-count`);
+  if(countEl) countEl.textContent = (notes[moduleName].length)+'条';
   toast('已添加 ✓');
 }
 function addSLNote(idx){
@@ -1729,11 +1971,17 @@ function addSLNote(idx){
   const moduleName=slMods[idx].name;
   const notes=ensureNotes('slNotes');
   if(!notes[moduleName]) notes[moduleName]=[];
-  notes[moduleName].unshift({id:Date.now().toString(),text:text,date:new Date().toISOString().split('T')[0]});
+  const selectedTags = collectSelectedTags('sl',idx);
+  notes[moduleName].unshift({id:Date.now().toString(),text:text,date:new Date().toISOString().split('T')[0],tags:selectedTags});
   sv();
   ta.value='';
+  const picker=document.getElementById('slTagPicker_'+idx);
+  if(picker) picker.querySelectorAll('.tag-chip.selected').forEach(c=>c.classList.remove('selected'));
   const listEl=document.getElementById('slNoteList_'+idx);
-  if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'sl',idx);
+  if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'sl',idx,slExpandState[idx]);
+  // 同步更新模块头部计数
+  const countEl = document.querySelector(`#slAcc${idx} .acc-count`);
+  if(countEl) countEl.textContent = (notes[moduleName].length)+'条';
   toast('已添加 ✓');
 }
 function delNote(prefix,key,id){
@@ -1750,27 +1998,167 @@ function delNote(prefix,key,id){
     // 局部刷新对应列表
     if(prefix==='xc'){
       const listEl=document.getElementById('xcNoteList_'+moduleName);
-      if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'xc',moduleName);
+      if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'xc',moduleName,xcExpandState[moduleName]);
+      const idx=xcMods.findIndex(m=>m.name===moduleName);
+      const countEl=document.querySelector(`#xcAcc${idx} .acc-count`);
+      if(countEl) countEl.textContent=(notes[moduleName].length)+'条';
     } else {
       const listEl=document.getElementById('slNoteList_'+key);
-      if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'sl',key);
+      if(listEl) listEl.innerHTML=renderNoteList(notes[moduleName],'sl',key,slExpandState[parseInt(key)]);
+      const countEl=document.querySelector(`#slAcc${key} .acc-count`);
+      if(countEl) countEl.textContent=(notes[moduleName].length)+'条';
     }
     toast('已删除');
   }
 }
+// ---- 笔记标签编辑器（弹窗式：可增删标签）----
+let _noteTagEditCtx = null; // {prefix,key,id}
+function openNoteTagEditor(prefix,key,id){
+  let field,moduleName;
+  if(prefix==='xc'){ field='xcNotes'; moduleName=key; }
+  else { field='slNotes'; moduleName=slMods[parseInt(key)].name; }
+  const notes=appData[field]||{};
+  const arr=notes[moduleName]||[];
+  const note=arr.find(n=>n.id===id);
+  if(!note) return;
+  _noteTagEditCtx={prefix,key,id};
+  const currentTags = note.tags||[];
+  const defaultTags = (prefix==='xc' ? (xcMods.find(x=>x.name===moduleName)||{tags:[]}).tags : (slMods[parseInt(key)]||{tags:[]}).tags);
+  const tagList = getModuleTags(prefix,moduleName,defaultTags);
+  // 渲染：已选标签 + 全部可选标签 + 自定义输入
+  const allTagsHtml = tagList.map(t=>{
+    const sel = currentTags.includes(t)?'selected':'';
+    return `<span class="tag-chip ${sel}" data-tag="${esc(t)}" onclick="toggleEditTagChip(this)">${esc(t)}</span>`;
+  }).join('');
+  const currentHtml = currentTags.map(t=>`<span class="note-card-tag">${esc(t)}<span class="tag-x" onclick="removeEditTag('${esc(t)}')">✕</span></span>`).join('');
+  const overlay = document.getElementById('noteTagModal');
+  document.getElementById('noteTagCurrent').innerHTML = currentHtml || '<span style="font-size:12px;color:var(--text-light);">暂无标签</span>';
+  document.getElementById('noteTagAll').innerHTML = allTagsHtml + `<span class="tag-chip-editable"><input type="text" id="noteTagNewInput" placeholder="+自定义标签" onkeypress="if(event.key==='Enter'){event.preventDefault();addEditTagCustom();}"><button class="tag-edit-btn" onclick="addEditTagCustom()">＋</button></span>`;
+  overlay.classList.add('show');
+}
+function toggleEditTagChip(el){
+  el.classList.toggle('selected');
+}
+function addEditTagCustom(){
+  const inp=document.getElementById('noteTagNewInput');
+  if(!inp) return;
+  const val=inp.value.trim();
+  if(!val) return;
+  // 添加为新标签项并自动选中
+  const container=document.getElementById('noteTagAll');
+  const span=document.createElement('span');
+  span.className='tag-chip selected';
+  span.dataset.tag=val;
+  span.textContent=val;
+  span.onclick=function(){ toggleEditTagChip(this); };
+  container.insertBefore(span, container.querySelector('.tag-chip-editable'));
+  inp.value='';
+}
+function removeEditTag(tag){
+  // 取消全部标签中对应项的选中
+  const chips=document.querySelectorAll('#noteTagAll .tag-chip');
+  chips.forEach(c=>{ if(c.dataset.tag===tag) c.classList.remove('selected'); });
+  // 刷新当前标签展示
+  refreshNoteTagCurrent();
+}
+function refreshNoteTagCurrent(){
+  const chips=document.querySelectorAll('#noteTagAll .tag-chip.selected');
+  const tags=Array.from(chips).map(c=>c.dataset.tag);
+  document.getElementById('noteTagCurrent').innerHTML = tags.length?tags.map(t=>`<span class="note-card-tag">${esc(t)}<span class="tag-x" onclick="removeEditTag('${esc(t)}')">✕</span></span>`).join(''):'<span style="font-size:12px;color:var(--text-light);">暂无标签</span>';
+}
+function saveNoteTags(){
+  if(!_noteTagEditCtx) return;
+  const {prefix,key,id}=_noteTagEditCtx;
+  const chips=document.querySelectorAll('#noteTagAll .tag-chip.selected');
+  const tags=Array.from(chips).map(c=>c.dataset.tag);
+  let field,moduleName;
+  if(prefix==='xc'){ field='xcNotes'; moduleName=key; }
+  else { field='slNotes'; moduleName=slMods[parseInt(key)].name; }
+  const notes=appData[field]||{};
+  const arr=notes[moduleName]||[];
+  const note=arr.find(n=>n.id===id);
+  if(note){
+    note.tags=tags;
+    sv();
+    // 同时把新标签并入标签库（去重）
+    if(!appData[field.replace('Notes','Tags')]) appData[field.replace('Notes','Tags')]={};
+    const tagStore=appData[field.replace('Notes','Tags')];
+    if(!tagStore[moduleName]) tagStore[moduleName]=[];
+    tags.forEach(t=>{ if(!tagStore[moduleName].includes(t)) tagStore[moduleName].push(t); });
+    sv();
+    // 局部刷新列表与标签选择器
+    if(prefix==='xc'){
+      const listEl=document.getElementById('xcNoteList_'+moduleName);
+      if(listEl) listEl.innerHTML=renderNoteList(arr,'xc',moduleName,xcExpandState[moduleName]);
+      refreshTagPicker('xc',moduleName,[]);
+    } else {
+      const listEl=document.getElementById('slNoteList_'+key);
+      if(listEl) listEl.innerHTML=renderNoteList(arr,'sl',key,slExpandState[parseInt(key)]);
+      refreshTagPicker('sl',key,[]);
+    }
+    toast('标签已更新 ✓');
+  }
+  closeNoteTagModal();
+}
+function closeNoteTagModal(){
+  document.getElementById('noteTagModal').classList.remove('show');
+  _noteTagEditCtx=null;
+}
 
 // ==================== 错题本 ====================
+// 错题列表展开状态：默认显示前 N 条，点击展开看全部
+let _wbExpanded = false;
+// 错题标签筛选状态
+let _wbTagFilter = '';
+const WB_COLLAPSE_LIMIT = 5;
+
 function renderWB(){
   const pf=document.getElementById('wrongFilterPhase').value,mf=document.getElementById('wrongFilterModule').value,sh=document.getElementById('wrongFilterSearch').value.toLowerCase();
   let fl=appData.wrongBook||[]; if(pf)fl=fl.filter(w=>w.phase===pf); if(mf)fl=fl.filter(w=>w.module===mf); if(sh)fl=fl.filter(w=>(w.question||'').toLowerCase().includes(sh));
-  document.getElementById('wrongBookList').innerHTML=fl.map(w=>{
+  // 标签筛选
+  if(_wbTagFilter) fl=fl.filter(w=>(w.tags||[]).includes(_wbTagFilter));
+  // 渲染标签筛选条（从全部错题中收集出现过的标签）
+  renderWBTagFilter();
+  // 折叠/展开
+  const showList = _wbExpanded ? fl : fl.slice(0,WB_COLLAPSE_LIMIT);
+  document.getElementById('wrongBookList').innerHTML=showList.map(w=>{
     const bg=w.phase==='精讲阶段'?'var(--tag-green)':w.phase==='夸夸刷阶段'?'var(--tag-blue)':'var(--tag-orange)';
     const cl=w.phase==='精讲阶段'?'var(--tag-green-text)':w.phase==='夸夸刷阶段'?'var(--tag-blue-text)':'var(--tag-orange-text)';
     const imgs=w.images||[];
     const imgHtml=imgs.length>0?`<div class="wrong-images">${imgs.map((src,fi)=>`<img class="wrong-img-thumb" src="${src}" onclick="showFullImg('${w.id}',${fi})">`).join('')}</div>`:'';
     const questionHtml=w.question?`<div class="wrong-question">${esc(w.question)}</div>`:(imgs.length>0?'<div class="wrong-question" style="color:var(--text-light);font-style:italic;">📷 图片题</div>':'');
-    return `<div class="wrong-card"><div class="wrong-card-header"><span class="task-tag" style="background:${bg};color:${cl};">${w.phase}</span><span class="task-tag" style="background:var(--tag-purple);color:var(--tag-purple-text);">${w.module}</span>${w.reviewCount>=3?'<span class="wrong-review-badge r3">三刷</span>':w.reviewCount>=2?'<span class="wrong-review-badge r2">二刷</span>':''}<button class="btn btn-ghost btn-xs" style="margin-left:auto;" onclick="delWrong('${w.id}')">删</button></div>${questionHtml}${imgHtml}${w.reason?`<div class="wrong-detail"><strong>错误原因：</strong>${esc(w.reason)}</div>`:''}${w.solution?`<div class="wrong-detail"><strong>正确思路：</strong>${esc(w.solution)}</div>`:''}<div style="margin-top:6px;"><button class="btn btn-outline btn-xs" onclick="markRev('${w.id}')">标记复习 (${w.reviewCount||1}刷)</button></div></div>`;
+    const wTags=w.tags||[];
+    const tagHtml=wTags.length>0?`<div class="wrong-card-tags">${wTags.map(t=>`<span class="wrong-card-tag">${esc(t)}</span>`).join('')}</div>`:'';
+    return `<div class="wrong-card"><div class="wrong-card-header"><span class="task-tag" style="background:${bg};color:${cl};">${w.phase}</span><span class="task-tag" style="background:var(--tag-purple);color:var(--tag-purple-text);">${w.module}</span>${w.reviewCount>=3?'<span class="wrong-review-badge r3">三刷</span>':w.reviewCount>=2?'<span class="wrong-review-badge r2">二刷</span>':''}<button class="btn btn-ghost btn-xs" style="margin-left:auto;" onclick="delWrong('${w.id}')">删</button></div>${questionHtml}${imgHtml}${w.reason?`<div class="wrong-detail"><strong>错误原因：</strong>${esc(w.reason)}</div>`:''}${w.solution?`<div class="wrong-detail"><strong>正确思路：</strong>${esc(w.solution)}</div>`:''}${tagHtml}<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-outline btn-xs" onclick="markRev('${w.id}')">标记复习 (${w.reviewCount||1}刷)</button><button class="btn btn-ghost btn-xs" onclick="openWrongTagEditor('${w.id}')">🏷️ 编辑标签</button></div></div>`;
   }).join('');
+  // 展开/收起按钮
+  if(fl.length>WB_COLLAPSE_LIMIT){
+    const btnHtml = `<button class="expand-toggle" onclick="toggleWBExpand()">${_wbExpanded?'收起 ▲':'展开全部 '+fl.length+' 道错题 ▼'}</button>`;
+    document.getElementById('wrongBookList').innerHTML += btnHtml;
+  }
+  // 更新计数提示
+  const cntTip = document.getElementById('wrongBookCount');
+  if(cntTip) cntTip.textContent = '共 '+fl.length+' 道';
+}
+function toggleWBExpand(){ _wbExpanded=!_wbExpanded; renderWB(); }
+// 渲染错题标签筛选条
+function renderWBTagFilter(){
+  const allTags = new Set();
+  (appData.wrongBook||[]).forEach(w=>(w.tags||[]).forEach(t=>allTags.add(t)));
+  const wbTags = appData.wbTags||[];
+  wbTags.forEach(t=>allTags.add(t));
+  const tagArr = Array.from(allTags);
+  const container = document.getElementById('wbTagFilterBar');
+  if(!container) return;
+  let html = '<span class="wb-tf-label">标签筛选：</span>';
+  html += `<span class="tag-chip ${_wbTagFilter===''?'selected':''}" onclick="setWBTagFilter('')">全部</span>`;
+  html += tagArr.map(t=>`<span class="tag-chip ${_wbTagFilter===t?'selected':''}" onclick="setWBTagFilter('${esc(t)}')">${esc(t)}</span>`).join('');
+  container.innerHTML = html;
+}
+function setWBTagFilter(tag){
+  _wbTagFilter = tag;
+  _wbExpanded = false; // 切换筛选时重置展开状态
+  renderWB();
 }
 function showFullImg(wid,fi){
   const w=(appData.wrongBook||[]).find(w=>w.id===wid);
@@ -1786,6 +2174,8 @@ function openWrongModal(){
   document.getElementById('wrongImgPreview').innerHTML='';
   document.getElementById('wrongImgPlaceholder').style.display='block';
   document.getElementById('wrongImgUploadArea').classList.remove('has-imgs');
+  // 初始化标签选择器
+  renderWrongTagPicker([]);
   document.getElementById('wrongModal').classList.add('show');
 }
 function closeWrongModal(){ document.getElementById('wrongModal').classList.remove('show'); }
@@ -1846,8 +2236,11 @@ function saveWrong(){
   const images=[..._wrongTempImages];
   // 如果既没有题目文字也没有图片，不允许保存
   if(!question && images.length===0){ toast('请输入题目内容或上传图片'); return; }
+  // 收集选中的标签
+  const selectedTags = collectWrongSelectedTags();
   const w={id:Date.now().toString(),question:question,phase:document.getElementById('wrongPhaseInput').value,module:document.getElementById('wrongModuleInput').value,reason:document.getElementById('wrongReasonInput').value.trim(),solution:document.getElementById('wrongSolutionInput').value.trim(),reviewCount:1,date:new Date().toISOString().split('T')[0]};
   if(images.length>0) w.images=images;
+  if(selectedTags.length>0) w.tags=selectedTags;
   if(!appData.wrongBook)appData.wrongBook=[]; appData.wrongBook.unshift(w); sv(); closeWrongModal(); renderWB();
   // 重置表单
   document.getElementById('wrongQuestionInput').value='';
@@ -1857,6 +2250,104 @@ function saveWrong(){
 }
 function delWrong(id){ appData.wrongBook=(appData.wrongBook||[]).filter(w=>w.id!==id); sv(); renderWB(); }
 function markRev(id){ const w=(appData.wrongBook||[]).find(w=>w.id===id); if(w){w.reviewCount=(w.reviewCount||1)+1;sv();renderWB();} }
+
+// ---- 错题标签选择器（录入弹窗内）----
+function renderWrongTagPicker(selectedTags){
+  const wbTags = appData.wbTags||['高频考点','易错陷阱','公式技巧','广东特色','需二刷','已掌握'];
+  const container = document.getElementById('wrongTagPicker');
+  if(!container) return;
+  let html = wbTags.map(t=>{
+    const sel = selectedTags.includes(t)?'selected':'';
+    return `<span class="tag-chip ${sel}" data-tag="${esc(t)}" onclick="this.classList.toggle('selected')">${esc(t)}</span>`;
+  }).join('');
+  html += `<span class="tag-chip-editable"><input type="text" id="wrongTagNewInput" placeholder="+自定义标签" onkeypress="if(event.key==='Enter'){event.preventDefault();addWrongCustomTag();}"><button class="tag-edit-btn" onclick="addWrongCustomTag()">＋</button></span>`;
+  container.innerHTML = html;
+}
+function collectWrongSelectedTags(){
+  const picker = document.getElementById('wrongTagPicker');
+  if(!picker) return [];
+  return Array.from(picker.querySelectorAll('.tag-chip.selected')).map(c=>c.dataset.tag);
+}
+function addWrongCustomTag(){
+  const inp=document.getElementById('wrongTagNewInput');
+  if(!inp) return;
+  const val=inp.value.trim();
+  if(!val) return;
+  if(!appData.wbTags) appData.wbTags=['高频考点','易错陷阱','公式技巧','广东特色','需二刷','已掌握'];
+  if(appData.wbTags.includes(val)){ toast('标签已存在'); return; }
+  appData.wbTags.push(val);
+  sv();
+  // 刷新选择器，保留已选中
+  const selected = collectWrongSelectedTags();
+  selected.push(val);
+  renderWrongTagPicker(selected);
+  inp.value='';
+}
+
+// ---- 错题标签编辑器（已有错题的标签增删改）----
+let _wrongTagEditId = null;
+function openWrongTagEditor(id){
+  const w=(appData.wrongBook||[]).find(x=>x.id===id);
+  if(!w) return;
+  _wrongTagEditId=id;
+  const currentTags = w.tags||[];
+  const wbTags = appData.wbTags||['高频考点','易错陷阱','公式技巧','广东特色','需二刷','已掌握'];
+  // 合并：标签库 + 该错题已有但不在标签库中的标签
+  const allTags = Array.from(new Set([...wbTags, ...currentTags]));
+  const allTagsHtml = allTags.map(t=>{
+    const sel = currentTags.includes(t)?'selected':'';
+    return `<span class="tag-chip ${sel}" data-tag="${esc(t)}" onclick="this.classList.toggle('selected');refreshWrongTagCurrent();">${esc(t)}</span>`;
+  }).join('');
+  const currentHtml = currentTags.map(t=>`<span class="wrong-card-tag">${esc(t)}<span class="tag-x" onclick="removeWrongEditTag('${esc(t)}')">✕</span></span>`).join('');
+  const overlay = document.getElementById('wrongTagModal');
+  document.getElementById('wrongTagCurrent').innerHTML = currentHtml || '<span style="font-size:12px;color:var(--text-light);">暂无标签</span>';
+  document.getElementById('wrongTagAll').innerHTML = allTagsHtml + `<span class="tag-chip-editable"><input type="text" id="wrongTagNewInput2" placeholder="+自定义标签" onkeypress="if(event.key==='Enter'){event.preventDefault();addWrongEditCustom();}"><button class="tag-edit-btn" onclick="addWrongEditCustom()">＋</button></span>`;
+  overlay.classList.add('show');
+}
+function removeWrongEditTag(tag){
+  const chips=document.querySelectorAll('#wrongTagAll .tag-chip');
+  chips.forEach(c=>{ if(c.dataset.tag===tag) c.classList.remove('selected'); });
+  refreshWrongTagCurrent();
+}
+function refreshWrongTagCurrent(){
+  const chips=document.querySelectorAll('#wrongTagAll .tag-chip.selected');
+  const tags=Array.from(chips).map(c=>c.dataset.tag);
+  document.getElementById('wrongTagCurrent').innerHTML = tags.length?tags.map(t=>`<span class="wrong-card-tag">${esc(t)}<span class="tag-x" onclick="removeWrongEditTag('${esc(t)}')">✕</span></span>`).join(''):'<span style="font-size:12px;color:var(--text-light);">暂无标签</span>';
+}
+function addWrongEditCustom(){
+  const inp=document.getElementById('wrongTagNewInput2');
+  if(!inp) return;
+  const val=inp.value.trim();
+  if(!val) return;
+  const container=document.getElementById('wrongTagAll');
+  const span=document.createElement('span');
+  span.className='tag-chip selected';
+  span.dataset.tag=val;
+  span.textContent=val;
+  span.onclick=function(){ this.classList.toggle('selected'); refreshWrongTagCurrent(); };
+  container.insertBefore(span, container.querySelector('.tag-chip-editable'));
+  inp.value='';
+  refreshWrongTagCurrent();
+}
+function saveWrongTags(){
+  if(!_wrongTagEditId) return;
+  const w=(appData.wrongBook||[]).find(x=>x.id===_wrongTagEditId);
+  if(!w) return;
+  const chips=document.querySelectorAll('#wrongTagAll .tag-chip.selected');
+  const tags=Array.from(chips).map(c=>c.dataset.tag);
+  w.tags=tags;
+  // 把新标签并入标签库
+  if(!appData.wbTags) appData.wbTags=[];
+  tags.forEach(t=>{ if(!appData.wbTags.includes(t)) appData.wbTags.push(t); });
+  sv();
+  closeWrongTagModal();
+  renderWB();
+  toast('标签已更新 ✓');
+}
+function closeWrongTagModal(){
+  document.getElementById('wrongTagModal').classList.remove('show');
+  _wrongTagEditId=null;
+}
 
 // ==================== 统计 ====================
 function upStats(){
@@ -2029,6 +2520,23 @@ function confirmImport(mode) {
         });
         current[f] = curObj;
       });
+      // 合并标签库（xcTags / slTags 按模块合并去重，wbTags 数组合并去重）
+      ['xcTags','slTags'].forEach(f => {
+        const curObj = current[f] || {};
+        const bkObj = backup[f] || {};
+        Object.keys(bkObj).forEach(moduleName => {
+          const curTags = curObj[moduleName] || [];
+          const bkTags = bkObj[moduleName] || [];
+          bkTags.forEach(t => { if(!curTags.includes(t)) curTags.push(t); });
+          curObj[moduleName] = curTags;
+        });
+        current[f] = curObj;
+      });
+      if(Array.isArray(backup.wbTags)){
+        const curWbTags = current.wbTags || [];
+        backup.wbTags.forEach(t=>{ if(!curWbTags.includes(t)) curWbTags.push(t); });
+        current.wbTags = curWbTags;
+      }
       // 合并三阶段科目任务（追加不重复的任务）
       ['p1','p2','p3'].forEach(pk => {
         const curPhase = migratePhaseData(current[pk] || buildEmptySubjects());
@@ -2060,8 +2568,9 @@ function confirmImport(mode) {
 }
 
 // ==================== 弹窗关闭（点击遮罩） ====================
-['dateModal','durationModal','wrongModal','importModal'].forEach(id=>{
-  document.getElementById(id).addEventListener('click',function(e){ if(e.target===this) this.classList.remove('show'); });
+['dateModal','durationModal','wrongModal','importModal','noteTagModal','wrongTagModal'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('click',function(e){ if(e.target===this) this.classList.remove('show'); });
 });
 
 // ==================== 初始化 ====================
