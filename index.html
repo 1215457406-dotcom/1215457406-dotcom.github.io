@@ -1356,7 +1356,7 @@ function migratePhaseData(phaseData) {
   });
   return phaseData;
 }
-function sv() { localStorage.setItem(SK, JSON.stringify(appData)); }
+function sv() { try { localStorage.setItem(SK, JSON.stringify(appData)); return true; } catch(e) { return false; } }
 
 // ==================== 精讲阶段默认课表 ====================
 // 仅在用户从未使用过精讲阶段时自动填充一次，保证已有进度不丢失
@@ -2576,7 +2576,7 @@ function handleWrongImages(input){
     const file=files[i];
     if(!file.type.startsWith('image/')){ remaining--; continue; }
     // 压缩图片到合理大小，避免 localStorage 溢出
-    compressImage(file,800,0.7,function(dataUrl){
+    compressImage(file,600,0.5,function(dataUrl){
       _wrongTempImages.push(dataUrl);
       remaining--;
       if(remaining===0) renderWrongImgPreview();
@@ -2601,6 +2601,56 @@ function compressImage(file,maxSize,quality,callback){
     img.src=e.target.result;
   };
   reader.readAsDataURL(file);
+}
+// 重压缩已有 base64 图片（用于 localStorage 配额溢出时自动瘦身）
+function recompressDataUrl(dataUrl,maxSize,quality,callback){
+  var img=new Image();
+  img.onload=function(){
+    var w=img.width,h=img.height;
+    if(w>h){ if(w>maxSize){ h=Math.round(h*maxSize/w); w=maxSize; } }
+    else { if(h>maxSize){ w=Math.round(w*maxSize/h); h=maxSize; } }
+    var canvas=document.createElement('canvas');
+    canvas.width=w; canvas.height=h;
+    var ctx=canvas.getContext('2d');
+    ctx.drawImage(img,0,0,w,h);
+    callback(canvas.toDataURL('image/jpeg',quality));
+  };
+  img.onerror=function(){ callback(null); };
+  img.src=dataUrl;
+}
+// 存储空间不足时：自动重压缩全部错题图片后重试保存
+function tryCompressImagesAndSave(newItem,isEdit){
+  var items=[];
+  (appData.wrongBook||[]).forEach(function(w){
+    if(w.images&&w.images.length>0){
+      w.images.forEach(function(src,i){ items.push({ref:w,idx:i,src:src}); });
+    }
+  });
+  if(items.length===0){
+    toast('存储空间不足，请删除部分旧错题后重试');
+    if(!isEdit&&newItem){ appData.wrongBook=appData.wrongBook.filter(function(x){return x.id!==newItem.id;}); }
+    return;
+  }
+  var done=0; var total=items.length;
+  items.forEach(function(item){
+    recompressDataUrl(item.src,400,0.4,function(newSrc){
+      if(newSrc&&newSrc.length<item.src.length){ item.ref.images[item.idx]=newSrc; }
+      done++;
+      if(done===total){
+        if(sv()){
+          closeWrongModal(); renderWB();
+          toast('已保存（图片已自动压缩）✓');
+          document.getElementById('wrongQuestionInput').value='';
+          document.getElementById('wrongReasonInput').value='';
+          document.getElementById('wrongSolutionInput').value='';
+          _wrongTempImages=[]; _wrongEditId=null;
+        } else {
+          toast('存储空间仍不足，请删除部分旧错题');
+          if(!isEdit&&newItem){ appData.wrongBook=appData.wrongBook.filter(function(x){return x.id!==newItem.id;}); }
+        }
+      }
+    });
+  });
 }
 function renderWrongImgPreview(){
   const previewEl=document.getElementById('wrongImgPreview');
@@ -2644,25 +2694,43 @@ function saveWrong(){
       else delete w.images;
       if(selectedTags.length>0) w.tags=selectedTags;
       else delete w.tags;
-      sv();
-      closeWrongModal();
-      renderWB();
-      toast('已修改 ✓');
+      if(sv()){
+        closeWrongModal();
+        renderWB();
+        toast('已修改 ✓');
+        document.getElementById('wrongQuestionInput').value='';
+        document.getElementById('wrongReasonInput').value='';
+        document.getElementById('wrongSolutionInput').value='';
+        _wrongTempImages=[];
+        _wrongEditId=null;
+      } else {
+        // 存储空间不足，自动压缩图片后重试
+        toast('存储空间不足，正在自动压缩图片…');
+        tryCompressImagesAndSave(w, true);
+      }
     }
   } else {
     // 新增模式
     const w={id:Date.now().toString(),question:question,phase:phase,module:module,reason:reason,solution:solution,reviewCount:1,date:new Date().toISOString().split('T')[0]};
     if(images.length>0) w.images=images;
     if(selectedTags.length>0) w.tags=selectedTags;
-    if(!appData.wrongBook)appData.wrongBook=[]; appData.wrongBook.unshift(w); sv(); closeWrongModal(); renderWB();
-    toast('已添加 ✓');
+    if(!appData.wrongBook)appData.wrongBook=[];
+    appData.wrongBook.unshift(w);
+    if(sv()){
+      closeWrongModal();
+      renderWB();
+      toast('已添加 ✓');
+      document.getElementById('wrongQuestionInput').value='';
+      document.getElementById('wrongReasonInput').value='';
+      document.getElementById('wrongSolutionInput').value='';
+      _wrongTempImages=[];
+      _wrongEditId=null;
+    } else {
+      // 存储空间不足，自动压缩图片后重试
+      toast('存储空间不足，正在自动压缩图片…');
+      tryCompressImagesAndSave(w, false);
+    }
   }
-  // 重置表单
-  document.getElementById('wrongQuestionInput').value='';
-  document.getElementById('wrongReasonInput').value='';
-  document.getElementById('wrongSolutionInput').value='';
-  _wrongTempImages=[];
-  _wrongEditId=null;
 }
 function delWrong(id){ appData.wrongBook=(appData.wrongBook||[]).filter(w=>w.id!==id); sv(); renderWB(); }
 function markRev(id){ const w=(appData.wrongBook||[]).find(w=>w.id===id); if(w){w.reviewCount=(w.reviewCount||1)+1;sv();renderWB();} }
