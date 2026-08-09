@@ -1609,6 +1609,12 @@ seedJingJiang();
 seedKuaKuaShua();
 sv();
 
+// 初始化：从 IndexedDB 加载错题图片到缓存（异步，完成后自动刷新错题本页面）
+loadIDBImages(function(){
+  var wbPage = document.getElementById('page-wrongbook');
+  if(wbPage && wbPage.classList.contains('active')) renderWB();
+});
+
 // ==================== Toast ====================
 function toast(msg) {
   const t = document.createElement('div'); t.className='toast'; t.textContent=msg;
@@ -2478,7 +2484,7 @@ function renderWB(){
     const bg=w.phase==='精讲阶段'?'var(--tag-green)':w.phase==='夸夸刷阶段'?'var(--tag-blue)':'var(--tag-orange)';
     const cl=w.phase==='精讲阶段'?'var(--tag-green-text)':w.phase==='夸夸刷阶段'?'var(--tag-blue-text)':'var(--tag-orange-text)';
     const imgs=w.images||[];
-    const imgHtml=imgs.length>0?`<div class="wrong-images">${imgs.map((src,fi)=>`<img class="wrong-img-thumb" src="${src}" onclick="showFullImg('${w.id}',${fi})">`).join('')}</div>`:'';
+    const imgHtml=imgs.length>0?`<div class="wrong-images">${imgs.map((src,fi)=>`<img class="wrong-img-thumb" src="${getImageSrc(src)}" onclick="showFullImg('${w.id}',${fi})">`).join('')}</div>`:'';
     const questionHtml=w.question?`<div class="wrong-question">${esc(w.question)}</div>`:(imgs.length>0?'<div class="wrong-question" style="color:var(--text-light);font-style:italic;">📷 图片题</div>':'');
     const wTags=w.tags||[];
     const tagHtml=wTags.length>0?`<div class="wrong-card-tags">${wTags.map(t=>`<span class="wrong-card-tag">${esc(t)}</span>`).join('')}</div>`:'';
@@ -2517,7 +2523,7 @@ function setWBTagFilter(tag){
 function showFullImg(wid,fi){
   const w=(appData.wrongBook||[]).find(w=>w.id===wid);
   if(w&&w.images&&w.images[fi]){
-    document.getElementById('imgFullSrc').src=w.images[fi];
+    document.getElementById('imgFullSrc').src=getImageSrc(w.images[fi]);
     document.getElementById('imgFullOverlay').classList.add('show');
   }
 }
@@ -2576,7 +2582,7 @@ function handleWrongImages(input){
     const file=files[i];
     if(!file.type.startsWith('image/')){ remaining--; continue; }
     // 压缩图片到合理大小，避免 localStorage 溢出
-    compressImage(file,600,0.5,function(dataUrl){
+    compressImage(file,800,0.7,function(dataUrl){
       _wrongTempImages.push(dataUrl);
       remaining--;
       if(remaining===0) renderWrongImgPreview();
@@ -2602,53 +2608,92 @@ function compressImage(file,maxSize,quality,callback){
   };
   reader.readAsDataURL(file);
 }
-// 重压缩已有 base64 图片（用于 localStorage 配额溢出时自动瘦身）
-function recompressDataUrl(dataUrl,maxSize,quality,callback){
-  var img=new Image();
-  img.onload=function(){
-    var w=img.width,h=img.height;
-    if(w>h){ if(w>maxSize){ h=Math.round(h*maxSize/w); w=maxSize; } }
-    else { if(h>maxSize){ w=Math.round(w*maxSize/h); h=maxSize; } }
-    var canvas=document.createElement('canvas');
-    canvas.width=w; canvas.height=h;
-    var ctx=canvas.getContext('2d');
-    ctx.drawImage(img,0,0,w,h);
-    callback(canvas.toDataURL('image/jpeg',quality));
-  };
-  img.onerror=function(){ callback(null); };
-  img.src=dataUrl;
+// ========== IndexedDB 图片存储（突破 localStorage 5MB 限制，保持原图清晰度）==========
+var _idbImageCache={}; // key→base64 data URL 的同步缓存
+var _idbReady=false;
+var _idbDB=null;
+function idbOpen(callback){
+  if(_idbDB){ callback(_idbDB); return; }
+  var req=indexedDB.open('studyplan_wb_images',1);
+  req.onupgradeneeded=function(e){ e.target.result.createObjectStore('images'); };
+  req.onsuccess=function(e){ _idbDB=e.target.result; _idbReady=true; callback(_idbDB); };
+  req.onerror=function(){ _idbReady=true; callback(null); };
 }
-// 存储空间不足时：自动重压缩全部错题图片后重试保存
-function tryCompressImagesAndSave(newItem,isEdit){
-  var items=[];
-  (appData.wrongBook||[]).forEach(function(w){
-    if(w.images&&w.images.length>0){
-      w.images.forEach(function(src,i){ items.push({ref:w,idx:i,src:src}); });
-    }
+function idbPutImage(base64,callback){
+  var key='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,10);
+  idbOpen(function(db){
+    if(!db){ callback(null); return; }
+    // 将 base64 转为 Blob 存入
+    var parts=base64.split(','); var mime=parts[0].match(/:(.*?);/);
+    var byteStr=atob(parts[1]); var ab=new ArrayBuffer(byteStr.length);
+    var ia=new Uint8Array(ab); for(var i=0;i<byteStr.length;i++) ia[i]=byteStr.charCodeAt(i);
+    var blob=new Blob([ab],{type:mime?mime[1]:'image/jpeg'});
+    var tx=db.transaction('images','readwrite');
+    tx.objectStore('images').put(blob,key);
+    tx.oncomplete=function(){ callback(key); };
+    tx.onerror=function(){ callback(null); };
   });
-  if(items.length===0){
-    toast('存储空间不足，请删除部分旧错题后重试');
-    if(!isEdit&&newItem){ appData.wrongBook=appData.wrongBook.filter(function(x){return x.id!==newItem.id;}); }
-    return;
-  }
-  var done=0; var total=items.length;
-  items.forEach(function(item){
-    recompressDataUrl(item.src,400,0.4,function(newSrc){
-      if(newSrc&&newSrc.length<item.src.length){ item.ref.images[item.idx]=newSrc; }
+}
+function idbGetImage(key,callback){
+  if(_idbImageCache[key]){ callback(_idbImageCache[key]); return; }
+  idbOpen(function(db){
+    if(!db){ callback(null); return; }
+    var tx=db.transaction('images','readonly');
+    var req=tx.objectStore('images').get(key);
+    req.onsuccess=function(){
+      var blob=req.result;
+      if(!blob){ callback(null); return; }
+      var reader=new FileReader();
+      reader.onload=function(){ var dataUrl=reader.result; _idbImageCache[key]=dataUrl; callback(dataUrl); };
+      reader.onerror=function(){ callback(null); };
+      reader.readAsDataURL(blob);
+    };
+    req.onerror=function(){ callback(null); };
+  });
+}
+function idbDelImage(key){
+  if(_idbImageCache[key]) delete _idbImageCache[key];
+  idbOpen(function(db){
+    if(!db) return;
+    var tx=db.transaction('images','readwrite');
+    tx.objectStore('images').delete(key);
+  });
+}
+// 同步获取图片 src：IDB key → 从缓存取；base64 → 直接用
+function getImageSrc(src){
+  if(!src) return src;
+  if(src.indexOf('data:')===0) return src; // 旧格式 base64，直接使用
+  if(_idbImageCache[src]) return _idbImageCache[src]; // IDB key，缓存命中
+  return src; // 缓存未命中，稍后异步加载后重新渲染
+}
+// 初始化：从 IDB 加载所有图片到缓存
+function loadIDBImages(callback){
+  var keys=[];
+  (appData.wrongBook||[]).forEach(function(w){
+    (w.images||[]).forEach(function(src){
+      if(src.indexOf('data:')!==0) keys.push(src);
+    });
+  });
+  if(keys.length===0){ if(callback) callback(); return; }
+  var loaded=0;
+  keys.forEach(function(key){
+    idbGetImage(key,function(dataUrl){
+      if(dataUrl) _idbImageCache[key]=dataUrl;
+      loaded++;
+      if(loaded===keys.length && callback) callback();
+    });
+  });
+}
+// 将一组 base64 图存入 IDB，返回 key 数组（异步回调）
+function storeImagesToIDB(base64Arr,callback){
+  if(!base64Arr||base64Arr.length===0){ callback([]); return; }
+  var keys=[]; var done=0;
+  base64Arr.forEach(function(b64,i){
+    idbPutImage(b64,function(key){
+      if(key){ keys[i]=key; _idbImageCache[key]=b64; }
+      else keys[i]=null;
       done++;
-      if(done===total){
-        if(sv()){
-          closeWrongModal(); renderWB();
-          toast('已保存（图片已自动压缩）✓');
-          document.getElementById('wrongQuestionInput').value='';
-          document.getElementById('wrongReasonInput').value='';
-          document.getElementById('wrongSolutionInput').value='';
-          _wrongTempImages=[]; _wrongEditId=null;
-        } else {
-          toast('存储空间仍不足，请删除部分旧错题');
-          if(!isEdit&&newItem){ appData.wrongBook=appData.wrongBook.filter(function(x){return x.id!==newItem.id;}); }
-        }
-      }
+      if(done===base64Arr.length) callback(keys.filter(function(k){return k!==null;}));
     });
   });
 }
@@ -2663,7 +2708,7 @@ function renderWrongImgPreview(){
   } else {
     placeholderEl.style.display='none';
     areaEl.classList.add('has-imgs');
-    previewEl.innerHTML=_wrongTempImages.map((src,i)=>`<div class="img-upload-preview-item"><img src="${src}"><button class="remove-img" onclick="removeWrongTempImg(${i})">✕</button></div>`).join('');
+    previewEl.innerHTML=_wrongTempImages.map((src,i)=>`<div class="img-upload-preview-item"><img src="${getImageSrc(src)}"><button class="remove-img" onclick="removeWrongTempImg(${i})">✕</button></div>`).join('');
   }
 }
 function removeWrongTempImg(idx){
@@ -2681,6 +2726,24 @@ function saveWrong(){
   const module=document.getElementById('wrongModuleInput').value;
   const reason=document.getElementById('wrongReasonInput').value.trim();
   const solution=document.getElementById('wrongSolutionInput').value.trim();
+  // 完成后统一执行：关闭弹窗、渲染、提示、重置表单
+  function finishSave(msg){
+    closeWrongModal();
+    renderWB();
+    toast(msg);
+    document.getElementById('wrongQuestionInput').value='';
+    document.getElementById('wrongReasonInput').value='';
+    document.getElementById('wrongSolutionInput').value='';
+    _wrongTempImages=[];
+    _wrongEditId=null;
+  }
+  function doSave(){
+    if(!sv()){
+      toast('存储空间不足，请删除部分旧错题后重试');
+      return;
+    }
+    finishSave(_wrongEditId?'已修改 ✓':'已添加 ✓');
+  }
   if(_wrongEditId){
     // 编辑模式：更新已有错题
     const w=(appData.wrongBook||[]).find(x=>x.id===_wrongEditId);
@@ -2690,49 +2753,60 @@ function saveWrong(){
       w.module=module;
       w.reason=reason;
       w.solution=solution;
-      if(images.length>0) w.images=images;
-      else delete w.images;
       if(selectedTags.length>0) w.tags=selectedTags;
       else delete w.tags;
-      if(sv()){
-        closeWrongModal();
-        renderWB();
-        toast('已修改 ✓');
-        document.getElementById('wrongQuestionInput').value='';
-        document.getElementById('wrongReasonInput').value='';
-        document.getElementById('wrongSolutionInput').value='';
-        _wrongTempImages=[];
-        _wrongEditId=null;
+      if(images.length>0){
+        // 区分已有 IDB key 和新上传的 base64
+        var keepKeys=[], newB64s=[];
+        images.forEach(function(s){
+          if(s.indexOf('data:')===0) newB64s.push(s);
+          else keepKeys.push(s);
+        });
+        // 清理用户删除的旧 IDB 图片
+        if(w.images) w.images.forEach(function(s){
+          if(s&&s.indexOf('data:')!==0 && keepKeys.indexOf(s)===-1) idbDelImage(s);
+        });
+        if(newB64s.length>0){
+          // 有新上传的图片，存入 IDB
+          storeImagesToIDB(newB64s,function(newKeys){
+            w.images=keepKeys.concat(newKeys);
+            doSave();
+          });
+        } else {
+          // 只有保留的旧 key，直接保存
+          w.images=keepKeys;
+          doSave();
+        }
       } else {
-        // 存储空间不足，自动压缩图片后重试
-        toast('存储空间不足，正在自动压缩图片…');
-        tryCompressImagesAndSave(w, true);
+        if(w.images) w.images.forEach(function(s){ if(s&&s.indexOf('data:')!==0) idbDelImage(s); });
+        delete w.images;
+        doSave();
       }
     }
   } else {
     // 新增模式
     const w={id:Date.now().toString(),question:question,phase:phase,module:module,reason:reason,solution:solution,reviewCount:1,date:new Date().toISOString().split('T')[0]};
-    if(images.length>0) w.images=images;
     if(selectedTags.length>0) w.tags=selectedTags;
     if(!appData.wrongBook)appData.wrongBook=[];
     appData.wrongBook.unshift(w);
-    if(sv()){
-      closeWrongModal();
-      renderWB();
-      toast('已添加 ✓');
-      document.getElementById('wrongQuestionInput').value='';
-      document.getElementById('wrongReasonInput').value='';
-      document.getElementById('wrongSolutionInput').value='';
-      _wrongTempImages=[];
-      _wrongEditId=null;
+    if(images.length>0){
+      // 存入 IndexedDB，用 key 替换 base64
+      storeImagesToIDB(images,function(keys){
+        if(keys.length>0) w.images=keys;
+        else delete w.images;
+        doSave();
+      });
     } else {
-      // 存储空间不足，自动压缩图片后重试
-      toast('存储空间不足，正在自动压缩图片…');
-      tryCompressImagesAndSave(w, false);
+      doSave();
     }
   }
 }
-function delWrong(id){ appData.wrongBook=(appData.wrongBook||[]).filter(w=>w.id!==id); sv(); renderWB(); }
+function delWrong(id){
+  var w=(appData.wrongBook||[]).find(function(x){return x.id===id;});
+  if(w&&w.images) w.images.forEach(function(s){ if(s&&s.indexOf('data:')!==0) idbDelImage(s); });
+  appData.wrongBook=(appData.wrongBook||[]).filter(function(x){return x.id!==id;});
+  sv(); renderWB();
+}
 function markRev(id){ const w=(appData.wrongBook||[]).find(w=>w.id===id); if(w){w.reviewCount=(w.reviewCount||1)+1;sv();renderWB();} }
 
 // ---- 错题标签选择器（录入弹窗内）----
