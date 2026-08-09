@@ -1609,11 +1609,15 @@ seedJingJiang();
 seedKuaKuaShua();
 sv();
 
-// 初始化：从 IndexedDB 加载错题图片到缓存（异步，完成后自动刷新错题本页面）
-loadIDBImages(function(){
-  var wbPage = document.getElementById('page-wrongbook');
-  if(wbPage && wbPage.classList.contains('active')) renderWB();
-});
+// 初始化：从 IndexedDB 加载错题图片到缓存
+// 等待 IDB 探测完成后再加载，确保 _idbAvailable 状态正确
+(function initLoadIDB(){
+  if(!_idbProbeDone){ setTimeout(initLoadIDB, 50); return; }
+  loadIDBImages(function(){
+    var wbPage = document.getElementById('page-wrongbook');
+    if(wbPage && wbPage.classList.contains('active')) renderWB();
+  });
+})();
 
 // ==================== Toast ====================
 function toast(msg) {
@@ -2610,90 +2614,117 @@ function compressImage(file,maxSize,quality,callback){
 }
 // ========== IndexedDB 图片存储（突破 localStorage 5MB 限制，保持原图清晰度）==========
 var _idbImageCache={}; // key→base64 data URL 的同步缓存
-var _idbReady=false;
+var _idbAvailable=false; // IndexedDB 是否可用（一次性检测）
 var _idbDB=null;
+var _idbProbeDone=false; // 探测是否已完成
+// 检测 IndexedDB 是否可用（异步，安全地触发一次）
+(function(){
+  try {
+    if(typeof indexedDB==='undefined'){ _idbAvailable=false; _idbProbeDone=true; return; }
+    var req=indexedDB.open('__workbuddy_probe__',1);
+    req.onsuccess=function(){ _idbAvailable=true; _idbProbeDone=true; };
+    req.onerror=function(){ _idbAvailable=false; _idbProbeDone=true; };
+    req.onblocked=function(){ _idbAvailable=false; _idbProbeDone=true; };
+  } catch(e){ _idbAvailable=false; _idbProbeDone=true; }
+})();
 function idbOpen(callback){
+  if(!_idbAvailable){ callback(null); return; }
   if(_idbDB){ callback(_idbDB); return; }
-  var req=indexedDB.open('studyplan_wb_images',1);
-  req.onupgradeneeded=function(e){ e.target.result.createObjectStore('images'); };
-  req.onsuccess=function(e){ _idbDB=e.target.result; _idbReady=true; callback(_idbDB); };
-  req.onerror=function(){ _idbReady=true; callback(null); };
+  try {
+    var req=indexedDB.open('studyplan_wb_images',1);
+    req.onupgradeneeded=function(e){ e.target.result.createObjectStore('images'); };
+    req.onsuccess=function(e){ _idbDB=e.target.result; callback(_idbDB); };
+    req.onerror=function(){ callback(null); };
+  } catch(e){ callback(null); }
 }
 function idbPutImage(base64,callback){
+  if(!_idbAvailable){ callback(null); return; }
   var key='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,10);
   idbOpen(function(db){
     if(!db){ callback(null); return; }
-    // 将 base64 转为 Blob 存入
     var parts=base64.split(','); var mime=parts[0].match(/:(.*?);/);
     var byteStr=atob(parts[1]); var ab=new ArrayBuffer(byteStr.length);
     var ia=new Uint8Array(ab); for(var i=0;i<byteStr.length;i++) ia[i]=byteStr.charCodeAt(i);
     var blob=new Blob([ab],{type:mime?mime[1]:'image/jpeg'});
-    var tx=db.transaction('images','readwrite');
-    tx.objectStore('images').put(blob,key);
-    tx.oncomplete=function(){ callback(key); };
-    tx.onerror=function(){ callback(null); };
+    try {
+      var tx=db.transaction('images','readwrite');
+      tx.objectStore('images').put(blob,key);
+      tx.oncomplete=function(){ callback(key); };
+      tx.onerror=function(){ callback(null); };
+    } catch(e){ callback(null); }
   });
 }
 function idbGetImage(key,callback){
   if(_idbImageCache[key]){ callback(_idbImageCache[key]); return; }
+  if(!_idbAvailable){ callback(null); return; }
   idbOpen(function(db){
     if(!db){ callback(null); return; }
-    var tx=db.transaction('images','readonly');
-    var req=tx.objectStore('images').get(key);
-    req.onsuccess=function(){
-      var blob=req.result;
-      if(!blob){ callback(null); return; }
-      var reader=new FileReader();
-      reader.onload=function(){ var dataUrl=reader.result; _idbImageCache[key]=dataUrl; callback(dataUrl); };
-      reader.onerror=function(){ callback(null); };
-      reader.readAsDataURL(blob);
-    };
-    req.onerror=function(){ callback(null); };
+    try {
+      var tx=db.transaction('images','readonly');
+      var req=tx.objectStore('images').get(key);
+      req.onsuccess=function(){
+        var blob=req.result;
+        if(!blob){ callback(null); return; }
+        var reader=new FileReader();
+        reader.onload=function(){ var dataUrl=reader.result; _idbImageCache[key]=dataUrl; callback(dataUrl); };
+        reader.onerror=function(){ callback(null); };
+        reader.readAsDataURL(blob);
+      };
+      req.onerror=function(){ callback(null); };
+    } catch(e){ callback(null); }
   });
 }
 function idbDelImage(key){
   if(_idbImageCache[key]) delete _idbImageCache[key];
+  if(!_idbAvailable) return;
   idbOpen(function(db){
     if(!db) return;
-    var tx=db.transaction('images','readwrite');
-    tx.objectStore('images').delete(key);
+    try {
+      var tx=db.transaction('images','readwrite');
+      tx.objectStore('images').delete(key);
+    } catch(e){}
   });
 }
 // 同步获取图片 src：IDB key → 从缓存取；base64 → 直接用
 function getImageSrc(src){
   if(!src) return src;
-  if(src.indexOf('data:')===0) return src; // 旧格式 base64，直接使用
+  if(src.indexOf('data:')===0) return src; // base64 格式，直接使用
   if(_idbImageCache[src]) return _idbImageCache[src]; // IDB key，缓存命中
-  return src; // 缓存未命中，稍后异步加载后重新渲染
+  return src; // 未命中，稍后异步加载
 }
 // 初始化：从 IDB 加载所有图片到缓存
 function loadIDBImages(callback){
-  var keys=[];
-  (appData.wrongBook||[]).forEach(function(w){
-    (w.images||[]).forEach(function(src){
-      if(src.indexOf('data:')!==0) keys.push(src);
+  if(!_idbAvailable){ if(callback) callback(); return; }
+  try {
+    var keys=[];
+    (appData.wrongBook||[]).forEach(function(w){
+      (w.images||[]).forEach(function(src){
+        if(src.indexOf('data:')!==0) keys.push(src);
+      });
     });
-  });
-  if(keys.length===0){ if(callback) callback(); return; }
-  var loaded=0;
-  keys.forEach(function(key){
-    idbGetImage(key,function(dataUrl){
-      if(dataUrl) _idbImageCache[key]=dataUrl;
-      loaded++;
-      if(loaded===keys.length && callback) callback();
+    if(keys.length===0){ if(callback) callback(); return; }
+    var loaded=0;
+    keys.forEach(function(key){
+      idbGetImage(key,function(dataUrl){
+        if(dataUrl) _idbImageCache[key]=dataUrl;
+        loaded++;
+        if(loaded===keys.length && callback) callback();
+      });
     });
-  });
+  } catch(e){ if(callback) callback(); }
 }
 // 将一组 base64 图存入 IDB，返回 key 数组（异步回调）
+// 如果 IDB 不可用，直接返回原始 base64 数组（回退到 localStorage 存储）
 function storeImagesToIDB(base64Arr,callback){
   if(!base64Arr||base64Arr.length===0){ callback([]); return; }
+  if(!_idbAvailable){ callback(base64Arr); return; } // IDB 不可用，保留 base64
   var keys=[]; var done=0;
   base64Arr.forEach(function(b64,i){
     idbPutImage(b64,function(key){
       if(key){ keys[i]=key; _idbImageCache[key]=b64; }
-      else keys[i]=null;
+      else keys[i]=b64; // 存入失败时回退为 base64
       done++;
-      if(done===base64Arr.length) callback(keys.filter(function(k){return k!==null;}));
+      if(done===base64Arr.length) callback(keys);
     });
   });
 }
